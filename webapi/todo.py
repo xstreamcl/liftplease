@@ -91,5 +91,7 @@ api.add_resource(User, '/users/<user_id>')
 #curl http://localhost:5000/users/user1
 #curl http://localhost:5000/users/user1 -d "state=taker&eta=time&route=xy"
 
+#curl http://whenisdryday.in/users -d "username=third&user_id=user2" -X POST -v
+
 if __name__ == '__main__':
-	app.run(debug=True)
+	app.run(debug=True,host=0.0.0.0)
