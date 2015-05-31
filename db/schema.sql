@@ -5,42 +5,52 @@ drop table if exists lp_match;
 drop table if exists lp_route;
 drop table if exists lp_geo;
 
-
 create table lp_user (
-    lpuid integer primary key autoincrement,
-    user_name text not null,
-    gtoken blob not null
+    lp_uid integer primary key autoincrement,
+    gtoken blob primary not null,
+	g_id integer not null,
+	displayname text not null,
+	gender text not null,
+	email text not null,
+	image_url blob,
+	aboutme blob,
+	occupation text,
+	org_type text,
+	org_name text,
+	org_title text,
+	org_dept text
 );
-
 
 create table lp_provider (
-    lpuid integer primary key,
+    lp_uid integer primary key,
     departtime datetime not null,
-    routeid integer not null
+    routeid integer not null,
+    encroute blob not null,
 );
-
 
 create table lp_subscriber (
-    lpuid integer primary key,
+    lp_uid integer primary key,
     departtime datetime not null,
-    sgeoid integer not null,
-    dgeoid integer not null
+    routeid integer not null,
+    encroute blob not null,
 );
 
-
 create table lp_match (
-    matchid integer primary key,
-    plpid integer not null,
-    slpid integer not null,
+    matchid integer primary key autoincrement,
+    p_lp_uid integer not null,
+    s_lp_uid integer not null,
     dropoffset real not null
 );
 
-
 create table lp_route (
-    routeid integer primary key,
+	routeid integer primary key autoincrement,
+	start_lat real not null,
+	start_lng real not null,
+	end_lat real not null,
+	end_lng real not null,
+	lp_uid integer primary key,
     encroute blob not null
 );
-
 
 create table lp_geo (
     geoid integer primary key,
