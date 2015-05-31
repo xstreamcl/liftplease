@@ -21,19 +21,19 @@ create table lp_user (
     org_dept text
 );
 
-create table lp_provider (
-    lp_uid integer primary key,
-    departtime datetime not null,
-    routeid integer not null,
-    encroute blob not null
-);
+create table lp_provider (\
+    lp_uid integer primary key,\
+    departtime real not null,\
+    routeid integer not null,\
+    encroute blob not null)
+;
 
-create table lp_subscriber (
-    lp_uid integer primary key,
-    departtime datetime not null,
-    routeid integer not null,
-    encroute blob not null
-);
+create table lp_subscriber (\
+    lp_uid integer primary key,\
+    departtime real not null,\
+    routeid integer not null,\
+    encroute blob not null)
+;
 
 create table lp_match (
     matchid integer primary key autoincrement,
