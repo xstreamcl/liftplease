@@ -1,5 +1,5 @@
 from flask_restful import fields, marshal_with, reqparse, Resource, inputs
-from db import db, lp_user
+from db import db, lp_user, lp_provider, lp_subscriber
 import uuid
 
 # !the final call on abstracting this and including it into a configuration file has to be made, so the code looks cleaner!
@@ -7,7 +7,7 @@ import uuid
 # Request parsers
 
 parser = reqparse.RequestParser()
-#enable when key format is done : 
+#enable when key format is done :
 #parser.add_argument( 'key', dest='app_id', type=inputs.regex('^.{10}$'), required=True, help='Application id' )
 
 ## parser copy
@@ -42,6 +42,7 @@ get_field = {
     'designation': fields.String(attribute='org_title'),
     'department': fields.String(attribute='org_dept'),
     'about': fields.String(attribute='about_me'),
+    'status': fields.String(attribute='status'),
 }
 
 post_field = {
@@ -59,7 +60,11 @@ class User(Resource):
         # if app_id is valid
         user = None
         if lp_user.query.filter_by(app_id=args.app_id).first() != None:
-            user = lp_user.query.get(args.lp_uid)
+            user = db.session.query(lp_user).get(args.lp_uid)._asdict()
+            if lp_provider.query.get(args.lp_uid) != None:
+                user['status'] = 'provider'
+            elif lp_subscriber.query.get(args.lp_uid) != None:
+                user['status'] = 'subscriber'
         return user
 
     @marshal_with(post_field)

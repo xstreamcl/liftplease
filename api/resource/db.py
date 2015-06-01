@@ -1,12 +1,21 @@
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
+from collections import OrderedDict
 
+class DictSerializable(object):
+    def _asdict(self):
+        result = OrderedDict()
+        for key in self.__mapper__.c.keys():
+            result[key] = getattr(self, key)
+        return result
+        
+        
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///lp.db'
 db = SQLAlchemy(app)
 
 
-class lp_user(db.Model):
+class lp_user(db.Model, DictSerializable):
     lp_uid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     app_id = db.Column(db.Text)
     g_id = db.Column(db.Integer)
@@ -37,7 +46,7 @@ class lp_user(db.Model):
         self.org_dept = org_dept
 
 
-class lp_provider(db.Model):
+class lp_provider(db.Model, DictSerializable):
     lp_uid = db.Column(db.Integer, primary_key=True)
     departtime = db.Column(db.Text)
     routeid = db.Column(db.Integer)
@@ -49,7 +58,7 @@ class lp_provider(db.Model):
         self.routeid = routeid
         self.encroute = encroute
 
-class lp_subscriber(db.Model):
+class lp_subscriber(db.Model, DictSerializable):
     lp_uid = db.Column(db.Integer, primary_key=True)
     departtime = db.Column(db.Text)
     routeid = db.Column(db.Integer)
@@ -62,7 +71,7 @@ class lp_subscriber(db.Model):
         self.encroute = encroute
 
 
-class lp_match(db.Model):
+class lp_match(db.Model, DictSerializable):
     matchid = db.Column(db.Integer, primary_key=True)
     p_lp_uid = db.Column(db.Integer)
     s_lp_uid = db.Column(db.Integer)
