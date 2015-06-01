@@ -2,16 +2,15 @@ from flask_restful import fields, marshal_with, reqparse, Resource, inputs
 from db import db, lp_user
 import uuid
 
-
 # !the final call on abstracting this and including it into a configuration file has to be made, so the code looks cleaner!
 
 # Request parsers
 
 parser = reqparse.RequestParser()
-# enable when key format is done : parser.add_argument( 'key', dest='app_id', type=inputs.regex('^.{10}$'), required=True, help='Application id' )
+#enable when key format is done : 
+#parser.add_argument( 'key', dest='app_id', type=inputs.regex('^.{10}$'), required=True, help='Application id' )
 
 ## parser copy
-
 get_parser = parser.copy()
 post_parser = parser.copy()
 
@@ -20,7 +19,6 @@ get_parser.add_argument( 'key', dest='app_id', type=str, required=True, help='Ap
 get_parser.add_argument( 'id', dest='lp_uid', type=int, required=True, help='The user\'s id' )
 
 ## post
-
 post_parser.add_argument( 'g_id', dest='g_id', type=int, required=True )
 post_parser.add_argument( 'name', dest='display_name', type=str, required=True )
 post_parser.add_argument( 'gender', dest='gender', type=str, required=True )
@@ -33,7 +31,6 @@ post_parser.add_argument( 'org_name', dest='org_name', type=str, required=False 
 post_parser.add_argument( 'org_title', dest='org_title', type=str, required=False )
 post_parser.add_argument( 'org_dept', dest='org_dept', type=str, required=False )
 
-
 # Response fields
 
 get_field = {
@@ -43,10 +40,9 @@ get_field = {
     'email': fields.String(attribute='email'),
     'image_uri': fields.String(attribute='image_url'),
     'designation': fields.String(attribute='org_title'),
-    'designation': fields.String(attribute='departmentorg_dept'),
+    'department': fields.String(attribute='org_dept'),
     'about': fields.String(attribute='about_me'),
 }
-
 
 post_field = {
     'id': fields.Integer(attribute='lp_uid'),
@@ -54,12 +50,9 @@ post_field = {
     'key': fields.String(attribute='app_id'),
 }
 
-
-
 # Resource class
 
 class User(Resource):
-
     @marshal_with(get_field)
     def get(self):
         args = get_parser.parse_args()
@@ -68,7 +61,6 @@ class User(Resource):
         if lp_user.query.filter_by(app_id=args.app_id).first() != None:
             user = lp_user.query.get(args.lp_uid)
         return user
-
 
     @marshal_with(post_field)
     def post(self):

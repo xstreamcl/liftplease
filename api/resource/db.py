@@ -39,7 +39,7 @@ class lp_user(db.Model):
 
 class lp_provider(db.Model):
     lp_uid = db.Column(db.Integer, primary_key=True)
-    departtime = db.Column(db.DateTime)
+    departtime = db.Column(db.Text)
     routeid = db.Column(db.Integer)
     encroute = db.Column(db.LargeBinary)
 
@@ -51,7 +51,7 @@ class lp_provider(db.Model):
 
 class lp_subscriber(db.Model):
     lp_uid = db.Column(db.Integer, primary_key=True)
-    departtime = db.Column(db.DateTime)
+    departtime = db.Column(db.Text)
     routeid = db.Column(db.Integer)
     encroute = db.Column(db.LargeBinary)
 
@@ -75,7 +75,7 @@ class lp_match(db.Model):
         self.dropoffset = dropoffset
 
 
-#me = lp_provider(102, datetime.now(), 100, 'IJDFY()*_#!^%&^@FMCfvb$IUO$&(UYIO&(SDFJD*(Uhdkjf')
+#me = lp_provider(102, Text.now(), 100, 'IJDFY()*_#!^%&^@FMCfvb$IUO$&(UYIO&(SDFJD*(Uhdkjf')
 #db.session.add(me)
 #db.session.commit()
 
