@@ -46,9 +46,7 @@ public class DefaultActivity extends ActionBarActivity implements GoogleApiClien
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(Plus.API, Plus.PlusOptions.builder().build())
-                .addApi(Places.GEO_DATA_API)
-                .addApi(Places.PLACE_DETECTION_API)
-                .addScope(Plus.SCOPE_PLUS_LOGIN)
+                .addScope(Plus.SCOPE_PLUS_PROFILE)
                 .build();
         mGoogleApiClient.connect();
 
@@ -76,7 +74,6 @@ public class DefaultActivity extends ActionBarActivity implements GoogleApiClien
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_my, menu);
         return super.onCreateOptionsMenu(menu);
@@ -87,11 +84,11 @@ public class DefaultActivity extends ActionBarActivity implements GoogleApiClien
             Plus.AccountApi.clearDefaultAccount(mGoogleApiClient);
             mGoogleApiClient.disconnect();
             Toast.makeText(this, "Logged out successfully.", Toast.LENGTH_LONG).show();
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
-            finish();
         }else{
             Toast.makeText(this, "Not Connected", Toast.LENGTH_LONG).show();
+        }
+        if(session.isLoggedIn()){
+            session.logoutUser();
         }
     }
 
@@ -108,16 +105,6 @@ public class DefaultActivity extends ActionBarActivity implements GoogleApiClien
         }
     }
 
-    @Override
-    public void onConnected(Bundle bundle) {
-        if (Plus.PeopleApi.getCurrentPerson(mGoogleApiClient) != null) {
-
-            Person currentPerson = Plus.PeopleApi.getCurrentPerson(mGoogleApiClient);
-            String personPhotoUrl = currentPerson.getImage().getUrl();
-
-
-        }
-    }
 
     private class GetProfileImage extends AsyncTask<String, Void, Bitmap> {
 
@@ -143,13 +130,13 @@ public class DefaultActivity extends ActionBarActivity implements GoogleApiClien
     }
 
     @Override
-    public void onConnectionSuspended(int i) {
+    public void onConnected(Bundle bundle) {
 
     }
+
     @Override
-    protected void onStart() {
-        super.onStart();
-        mGoogleApiClient.connect();
+    public void onConnectionSuspended(int i) {
+
     }
 
     @Override
@@ -158,10 +145,17 @@ public class DefaultActivity extends ActionBarActivity implements GoogleApiClien
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        mGoogleApiClient.connect();
+    }
+
+    @Override
     public void onBackPressed() {
-        Intent intent = new Intent(this, DefaultActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.putExtra("EXIT", true);
-        startActivity(intent);
+//        Intent intent = new Intent(this, DefaultActivity.class);
+//        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//        intent.putExtra("EXIT", true);
+//        startActivity(intent);
+        finish();
     }
 }

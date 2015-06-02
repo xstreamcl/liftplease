@@ -71,8 +71,9 @@ public class MapsActivity extends ActionBarActivity implements
     private PlaceAutocompleteAdapter mAdapter;
     private AutoCompleteTextView mAutocompleteView;
     private Location sLocation;
+    private Location dLocation;
     private Marker sLocationMarker;
-    private Marker destMarker;
+    private Marker dLocationMarker = null;
     private ImageButton clearButton;
     private List<Polyline> polylines = new ArrayList<Polyline>();
 
@@ -80,27 +81,20 @@ public class MapsActivity extends ActionBarActivity implements
 
     public static final String TAG = MapsActivity.class.getSimpleName();
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
-    private static final LatLngBounds BOUNDS_GREATER_SYDNEY = new LatLngBounds(
-            new LatLng(-34.041458, 150.790100), new LatLng(-33.682247, 151.383362));
+    private static final LatLngBounds BOUNDS_GREATER_INDIA = new LatLngBounds(
+            new LatLng(8,  68), new LatLng(38, 98));
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        setUpMapIfNeeded();
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
                 .addApi(Places.GEO_DATA_API)
                 .build();
 
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-
-
-        // Create the LocationRequest object
         mLocationRequest = LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(10 * 1000)        // 10 seconds, in milliseconds
@@ -118,23 +112,36 @@ public class MapsActivity extends ActionBarActivity implements
             }
         });
 
-        // Retrieve the AutoCompleteTextView that will display Place suggestions.
-        mAutocompleteView = (AutoCompleteTextView)
-                findViewById(R.id.autocomplete_places);
+        mAutocompleteView = (AutoCompleteTextView)findViewById(R.id.autocomplete_places);
 
-        // Register a listener that receives callbacks when a suggestion has been selected
         mAutocompleteView.setOnItemClickListener(mAutocompleteClickListener);
-
-        // Retrieve the TextViews that will display details and attributions of the selected place.
-//        mPlaceDetailsText = (TextView) findViewById(R.id.place_details);
-//        mPlaceDetailsAttribution = (TextView) findViewById(R.id.place_attribution);
-
-        // Set up the adapter that will retrieve suggestions from the Places Geo Data API that cover
-        // the entire world.
         mAdapter = new PlaceAutocompleteAdapter(this, android.R.layout.simple_list_item_1,
-                mGoogleApiClient, BOUNDS_GREATER_SYDNEY, null);
+                mGoogleApiClient, BOUNDS_GREATER_INDIA, null);
         mAutocompleteView.setAdapter(mAdapter);
 
+    }
+
+    public MyLocation.LocationResult locationResult = new MyLocation.LocationResult(){
+        public void gotLocation(final Location location){
+            location.getLongitude();
+            location.getLatitude();
+            sLocation = location;
+            if(dLocationMarker == null){
+                handleNewLocation(location);
+            }else{
+                showRoute();
+            }
+        }
+    };
+
+    public void showRoute(){
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        builder.include(sLocationMarker.getPosition());
+        builder.include(dLocationMarker.getPosition());
+        LatLngBounds bounds = builder.build();
+        int padding = 100; // offset from edges of the map in pixels
+        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+        mMap.animateCamera(cu);
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -170,8 +177,8 @@ public class MapsActivity extends ActionBarActivity implements
                 line.remove();
             }
             polylines.clear();
-            if(destMarker != null){
-                destMarker.remove();
+            if(dLocationMarker != null){
+                dLocationMarker.remove();
             }
 
             mAutocompleteView.setSelection(0);
@@ -199,52 +206,18 @@ public class MapsActivity extends ActionBarActivity implements
             }
             // Get the Place object from the buffer.
             final Place place = places.get(0);
-
             LatLng dest = place.getLatLng();
 
-            destMarker = mMap.addMarker(new MarkerOptions()
-                    .position(dest)
-                    .title("Destination"));
-            destMarker.showInfoWindow();
-
-
+            dLocationMarker = mMap.addMarker(new MarkerOptions().position(dest).title("Destination"));
+            dLocationMarker.showInfoWindow();
+            showRoute();
 
             MapsActivity.mainMenu.findItem(R.id.action_done).setVisible(true);
-            LatLngBounds.Builder builder = new LatLngBounds.Builder();
-            builder.include(sLocationMarker.getPosition());
-            builder.include(destMarker.getPosition());
-            LatLngBounds bounds = builder.build();
-            int padding = 100; // offset from edges of the map in pixels
-            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-            mMap.animateCamera(cu);
 
             // Getting URL to the Google Directions API
             String url = getDirectionsUrl(dest);
-
             DownloadTask downloadTask = new DownloadTask();
-
-            // Start downloading json data from Google Directions API
             downloadTask.execute(url);
-
-//            String url =  makeURL(place.getLatLng().latitude, place.getLatLng().longitude);
-//            JSONParser jParser = new JSONParser();
-//            String json = jParser.getJSONFromUrl(url);
-//            new connectAsyncTask(json);
-
-            // Format details of the place for display and show it in a TextView.
-//            mPlaceDetailsText.setText(formatPlaceDetails(getResources(), place.getName(),
-//                    place.getId(), place.getAddress(), place.getPhoneNumber(),
-//                    place.getWebsiteUri()));
-
-            // Display the third party attributions if set.
-//            final CharSequence thirdPartyAttribution = places.getAttributions();
-//            if (thirdPartyAttribution == null) {
-//                mPlaceDetailsAttribution.setVisibility(View.GONE);
-//            } else {
-//                mPlaceDetailsAttribution.setVisibility(View.VISIBLE);
-//                mPlaceDetailsAttribution.setText(Html.fromHtml(thirdPartyAttribution.toString()));
-//            }
-
 
             places.release();
         }
@@ -402,13 +375,13 @@ public class MapsActivity extends ActionBarActivity implements
 
     @Override
     public void onConnected(Bundle bundle) {
-        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        if(location == null){
-            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-        }else{
-            handleNewLocation(location);
-        }
-        sLocation = location;
+//        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+//        if(location == null){
+//            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+//        }else{
+//            handleNewLocation(location);
+//        }
+//        sLocation = location;
     }
 
     private void handleNewLocation(Location location) {
@@ -418,11 +391,19 @@ public class MapsActivity extends ActionBarActivity implements
         double currentLongitude = location.getLongitude();
         LatLng latLng = new LatLng(currentLatitude, currentLongitude);
 
-
         sLocationMarker = mMap.addMarker(new MarkerOptions()
                 .position(latLng)
-                .title("Current Position"));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15F));
+                .title("You are here"));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15F), new GoogleMap.CancelableCallback() {
+            @Override
+            public void onFinish() {
+                sLocationMarker.showInfoWindow();
+            }
+            @Override
+            public void onCancel() {
+
+            }
+        });
     }
 
     @Override
@@ -431,9 +412,16 @@ public class MapsActivity extends ActionBarActivity implements
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         setUpMapIfNeeded();
+        MyLocation myLocation = new MyLocation();
+        myLocation.getLocation(this, locationResult);
         mGoogleApiClient.connect();
     }
 
@@ -441,32 +429,13 @@ public class MapsActivity extends ActionBarActivity implements
     protected void onPause() {
         super.onPause();
         if (mGoogleApiClient.isConnected()) {
-            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
             mGoogleApiClient.disconnect();
         }
     }
 
-    /**
-     * Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
-     * installed) and the map has not already been instantiated.. This will ensure that we only ever
-     * call {@link #setUpMap()} once when {@link #mMap} is not null.
-     * <p/>
-     * If it isn't installed {@link SupportMapFragment} (and
-     * {@link com.google.android.gms.maps.MapView MapView}) will show a prompt for the user to
-     * install/update the Google Play services APK on their device.
-     * <p/>
-     * A user can return to this FragmentActivity after following the prompt and correctly
-     * installing/updating/enabling the Google Play services. Since the FragmentActivity may not
-     * have been completely destroyed during this process (it is likely that it would only be
-     * stopped or paused), {@link #onCreate(Bundle)} may not be called again so we should call this
-     * method in {@link #onResume()} to guarantee that it will be called.
-     */
     private void setUpMapIfNeeded() {
-        // Do a null check to confirm that we have not already instantiated the map.
         if (mMap == null) {
-            // Try to obtain the map from the SupportMapFragment.
-            mMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.map))
-                    .getMap();
+            mMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
         }
     }
 

@@ -48,7 +48,8 @@
 
         <activity
             android:name=".MapsActivity"
-            android:label="Create a trip" >
+            android:label="Create a trip"
+            android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="in.co.liftplease.myapplication.DefaultActivity" />

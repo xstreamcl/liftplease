@@ -43,6 +43,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class LoginActivity extends Activity implements
@@ -74,23 +75,11 @@ public class LoginActivity extends Activity implements
      * issues preventing sign-in without waiting.
      */
     private boolean mSignInClicked;
-
-    /**
-     * True if we are in the process of resolving a ConnectionResult
-     */
     private boolean mIntentInProgress = false;
-    /* Client used to interact with Google APIs. */
     private GoogleApiClient mGoogleApiClient;
-
-    /* A flag indicating that a PendingIntent is in progress and prevents
-     * us from starting further intents.
-     */
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getIntent().getBooleanExtra("EXIT", false)) {
-            finish();
-        }
         setContentView(R.layout.activity_login);
         spinner = (ProgressBar)findViewById(R.id.progressBar1);
         signInText = (TextView)findViewById(R.id.sign_in_text);
@@ -113,45 +102,19 @@ public class LoginActivity extends Activity implements
 
     protected void onStop() {
         super.onStop();
-
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
         }
     }
 
-
     @Override
-//    public void onConnectionFailed(ConnectionResult result) {
-//        Log.v(TAG, "ConnectionFailed");
-//        // Most of the time, the connection will fail with a
-//        // user resolvable result. We can store that in our
-//        // mConnectionResult property ready for to be used
-//        // when the user clicks the sign-in button.
-//        if (result.hasResolution()) {
-//            mConnectionResult = result;
-//            if (mResolveOnFail) {
-//                // This is a local helper function that starts
-//                // the resolution of the problem, which may be
-//                // showing the user an account chooser or similar.
-//                result.startResolutionForResult(this, RC_SIGN_IN);
-//            }
-//        }else{
-//            signInButton.setVisibility(View.VISIBLE);
-//            signInText.setVisibility(View.VISIBLE);
-//            spinner.setVisibility(View.GONE);
-//        }
-//    }
     public void onConnectionFailed(ConnectionResult result) {
         if (!mIntentInProgress) {
             if (mSignInClicked && result.hasResolution()) {
-                // The user has already clicked 'sign-in' so we attempt to resolve all
-                // errors until the user is signed in, or they cancel.
                 try {
                     result.startResolutionForResult(this, RC_SIGN_IN);
                     mIntentInProgress = true;
                 } catch (IntentSender.SendIntentException e) {
-                    // The intent was canceled before it was sent.  Return to the default
-                    // state and attempt to connect to get an updated ConnectionResult.
                     mIntentInProgress = false;
                     mGoogleApiClient.connect();
                 }
@@ -160,6 +123,10 @@ public class LoginActivity extends Activity implements
                 signInText.setVisibility(View.VISIBLE);
                 spinner.setVisibility(View.GONE);
             }
+        } else {
+            signInButton.setVisibility(View.VISIBLE);
+            signInText.setVisibility(View.VISIBLE);
+            spinner.setVisibility(View.GONE);
         }
     }
 
@@ -196,7 +163,13 @@ public class LoginActivity extends Activity implements
     @Override
     public void onConnected(Bundle connectionHint) {
         mSignInClicked = false;
-        Plus.PeopleApi.loadVisible(mGoogleApiClient, null).setResultCallback(this);
+        HashMap<String, String> user = session.getUserDetails();
+        String sessin_id = user.get(SessionManager.KEY_SESSION);
+        if(sessin_id != null){
+            proceed();
+        }else{
+            Plus.PeopleApi.loadVisible(mGoogleApiClient, null).setResultCallback(this);
+        }
     }
 
     @Override
@@ -222,7 +195,7 @@ public class LoginActivity extends Activity implements
             org_name = org.getName();
             org_title = org.getTitle();
         }
-        if(Plus.AccountApi.getAccountName(mGoogleApiClient) != null){
+        if (Plus.AccountApi.getAccountName(mGoogleApiClient) != null) {
             email = Plus.AccountApi.getAccountName(mGoogleApiClient);
         }
         new MyAsyncTask().execute(g_id,name,gender,email,image_uri,org_name,org_title,device_id,about);
@@ -287,13 +260,9 @@ public class LoginActivity extends Activity implements
                 System.out.println("An Exception given because of UrlEncodedFormEntity argument :" + uee);
                 uee.printStackTrace();
             }
-
             return null;
         }
 
-
-        // Executes in UI thread, after the execution of
-        // doInBackground()g_id,name,gender,email,image_uri,org_name,org_title,device_id,about
         @Override
         protected void onPostExecute(String result) {
             try {
@@ -304,8 +273,6 @@ public class LoginActivity extends Activity implements
             } catch (JSONException e) {
                 Log.e("JSONException", "Error: " + e.toString());
             }
-            Toast.makeText(getApplicationContext(), "command sent", Toast.LENGTH_LONG).show();
-
         }
 
     }
