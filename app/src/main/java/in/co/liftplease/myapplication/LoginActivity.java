@@ -1,0 +1,358 @@
+package in.co.liftplease.myapplication;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentSender;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.provider.Settings;
+import android.telephony.TelephonyManager;
+import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.plus.People;
+import com.google.android.gms.plus.Plus;
+import com.google.android.gms.plus.model.people.Person;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+public class LoginActivity extends Activity implements
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, View.OnClickListener, ResultCallback<People.LoadPeopleResult> {
+
+    private ProgressBar spinner;
+    private SignInButton signInButton;
+    private TextView signInText;
+    private static final int ACCOUNT_PICKER_REQUEST_CODE = 42;
+
+    SessionManager session;
+
+
+    String g_id = null;
+    String name = null;
+    String gender = null;
+    String about = null;
+    String email = null;
+    String image_uri = null;
+    String org_name = null;
+    String org_title = null;
+    String device_id = null;
+
+    /* Request code used to invoke sign in user interactions. */
+    private static final int RC_SIGN_IN = 0;
+
+    /**
+     * True if the sign-in button was clicked.  When true, we know to resolve all
+     * issues preventing sign-in without waiting.
+     */
+    private boolean mSignInClicked;
+
+    /**
+     * True if we are in the process of resolving a ConnectionResult
+     */
+    private boolean mIntentInProgress = false;
+    /* Client used to interact with Google APIs. */
+    private GoogleApiClient mGoogleApiClient;
+
+    /* A flag indicating that a PendingIntent is in progress and prevents
+     * us from starting further intents.
+     */
+
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getIntent().getBooleanExtra("EXIT", false)) {
+            finish();
+        }
+        setContentView(R.layout.activity_login);
+        spinner = (ProgressBar)findViewById(R.id.progressBar1);
+        signInText = (TextView)findViewById(R.id.sign_in_text);
+        signInButton = (SignInButton)findViewById(R.id.sign_in_button);
+        signInButton.setOnClickListener(this);
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(Plus.API, Plus.PlusOptions.builder().build())
+                .addScope(Plus.SCOPE_PLUS_LOGIN)
+                .addScope(Plus.SCOPE_PLUS_PROFILE)
+                .build();
+        session = new SessionManager(getApplicationContext());
+    }
+
+    protected void onStart() {
+        super.onStart();
+        mGoogleApiClient.connect();
+    }
+
+    protected void onStop() {
+        super.onStop();
+
+        if (mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
+    }
+
+
+    @Override
+//    public void onConnectionFailed(ConnectionResult result) {
+//        Log.v(TAG, "ConnectionFailed");
+//        // Most of the time, the connection will fail with a
+//        // user resolvable result. We can store that in our
+//        // mConnectionResult property ready for to be used
+//        // when the user clicks the sign-in button.
+//        if (result.hasResolution()) {
+//            mConnectionResult = result;
+//            if (mResolveOnFail) {
+//                // This is a local helper function that starts
+//                // the resolution of the problem, which may be
+//                // showing the user an account chooser or similar.
+//                result.startResolutionForResult(this, RC_SIGN_IN);
+//            }
+//        }else{
+//            signInButton.setVisibility(View.VISIBLE);
+//            signInText.setVisibility(View.VISIBLE);
+//            spinner.setVisibility(View.GONE);
+//        }
+//    }
+    public void onConnectionFailed(ConnectionResult result) {
+        if (!mIntentInProgress) {
+            if (mSignInClicked && result.hasResolution()) {
+                // The user has already clicked 'sign-in' so we attempt to resolve all
+                // errors until the user is signed in, or they cancel.
+                try {
+                    result.startResolutionForResult(this, RC_SIGN_IN);
+                    mIntentInProgress = true;
+                } catch (IntentSender.SendIntentException e) {
+                    // The intent was canceled before it was sent.  Return to the default
+                    // state and attempt to connect to get an updated ConnectionResult.
+                    mIntentInProgress = false;
+                    mGoogleApiClient.connect();
+                }
+            } else {
+                signInButton.setVisibility(View.VISIBLE);
+                signInText.setVisibility(View.VISIBLE);
+                spinner.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int responseCode, Intent intent) {
+        if (requestCode == RC_SIGN_IN) {
+            if (responseCode != RESULT_OK) {
+                mSignInClicked = false;
+            }
+            mIntentInProgress = false;
+
+            if (!mGoogleApiClient.isConnected()) {
+                mGoogleApiClient.reconnect();
+            }
+        }
+    }
+
+    public void onConnectionSuspended(int cause) {
+        signInButton.setVisibility(View.VISIBLE);
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    public void onClick(View view) {
+        if (view.getId() == R.id.sign_in_button && !mGoogleApiClient.isConnecting()) {
+            signInButton.setVisibility(View.GONE);
+            signInText.setVisibility(View.GONE);
+            spinner.setVisibility(View.VISIBLE);
+            mSignInClicked = true;
+            mGoogleApiClient.connect();
+        }
+    }
+
+    @Override
+    public void onConnected(Bundle connectionHint) {
+        mSignInClicked = false;
+        Plus.PeopleApi.loadVisible(mGoogleApiClient, null).setResultCallback(this);
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra("EXIT", true);
+        startActivity(intent);
+    }
+
+    @Override
+    public void onResult(People.LoadPeopleResult loadPeopleResult) {
+        TelephonyManager tManager = (TelephonyManager)this.getSystemService(Context.TELEPHONY_SERVICE);
+        device_id = tManager.getDeviceId();
+        if (Plus.PeopleApi.getCurrentPerson(mGoogleApiClient) != null) {
+            Person currentPerson = Plus.PeopleApi.getCurrentPerson(mGoogleApiClient);
+            g_id = currentPerson.getId();
+            name = currentPerson.getDisplayName();
+            gender = String.valueOf(currentPerson.getGender());
+            about = currentPerson.getAboutMe();
+            image_uri = currentPerson.getImage().getUrl();
+            Person.Organizations org = currentPerson.getOrganizations().get(1);
+            org_name = org.getName();
+            org_title = org.getTitle();
+        }
+        if(Plus.AccountApi.getAccountName(mGoogleApiClient) != null){
+            email = Plus.AccountApi.getAccountName(mGoogleApiClient);
+        }
+        new MyAsyncTask().execute(g_id,name,gender,email,image_uri,org_name,org_title,device_id,about);
+    }
+
+    private class MyAsyncTask extends AsyncTask<String, Integer, String>{
+
+        @Override
+        protected String doInBackground(String... params) {
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpPost httppost = new HttpPost("http://whenisdryday.in:5000/user");
+
+            List nameValuedPairs = new ArrayList();
+            nameValuedPairs.add(new BasicNameValuePair("g_id", params[0]));
+            nameValuedPairs.add(new BasicNameValuePair("name", params[1]));
+            nameValuedPairs.add(new BasicNameValuePair("gender", params[2]));
+            nameValuedPairs.add(new BasicNameValuePair("email", params[3]));
+            nameValuedPairs.add(new BasicNameValuePair("image_uri", params[4]));
+            nameValuedPairs.add(new BasicNameValuePair("org_name", params[5]));
+            nameValuedPairs.add(new BasicNameValuePair("org_title", params[6]));
+            nameValuedPairs.add(new BasicNameValuePair("device_id", params[7]));
+            try {
+                // UrlEncodedFormEntity is an entity composed of a list of url-encoded pairs.
+                //This is typically useful while sending an HTTP POST request.
+                UrlEncodedFormEntity urlEncodedFormEntity = new UrlEncodedFormEntity(nameValuedPairs);
+
+                // setEntity() hands the entity (here it is urlEncodedFormEntity) to the request.
+                httppost.setEntity(urlEncodedFormEntity);
+
+                try {
+                    // HttpResponse is an interface just like HttpPost.
+                    //Therefore we can't initialize them
+                    HttpResponse httpResponse = httpclient.execute(httppost);
+
+                    // According to the JAVA API, InputStream constructor do nothing.
+                    //So we can't initialize InputStream although it is not an interface
+                    InputStream inputStream = httpResponse.getEntity().getContent();
+
+                    InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+
+                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+
+                    StringBuilder stringBuilder = new StringBuilder();
+
+                    String bufferedStrChunk = null;
+
+                    while((bufferedStrChunk = bufferedReader.readLine()) != null){
+                        stringBuilder.append(bufferedStrChunk);
+                    }
+
+                    return stringBuilder.toString();
+
+                } catch (ClientProtocolException cpe) {
+                    System.out.println("First Exception caz of HttpResponese :" + cpe);
+                    cpe.printStackTrace();
+                } catch (IOException ioe) {
+                    System.out.println("Second Exception caz of HttpResponse :" + ioe);
+                    ioe.printStackTrace();
+                }
+
+            } catch (UnsupportedEncodingException uee) {
+                System.out.println("An Exception given because of UrlEncodedFormEntity argument :" + uee);
+                uee.printStackTrace();
+            }
+
+            return null;
+        }
+
+
+        // Executes in UI thread, after the execution of
+        // doInBackground()g_id,name,gender,email,image_uri,org_name,org_title,device_id,about
+        @Override
+        protected void onPostExecute(String result) {
+            try {
+                JSONObject jObject = new JSONObject(result);
+                String key = jObject.getString("key");
+                session.createLoginSession(name,email,image_uri,key,"0");
+                proceed();
+            } catch (JSONException e) {
+                Log.e("JSONException", "Error: " + e.toString());
+            }
+            Toast.makeText(getApplicationContext(), "command sent", Toast.LENGTH_LONG).show();
+
+        }
+
+    }
+
+    public void proceed(){
+        Intent intent = new Intent(this, DefaultActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    /** A method to download json data from url */
+    private String downloadUrl(String strUrl) throws IOException {
+        String data = "";
+        InputStream iStream = null;
+        HttpURLConnection urlConnection = null;
+        try{
+            URL url = new URL(strUrl);
+
+            // Creating an http connection to communicate with url
+            urlConnection = (HttpURLConnection) url.openConnection();
+
+            // Connecting to url
+            urlConnection.connect();
+
+            // Reading data from url
+            iStream = urlConnection.getInputStream();
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
+
+            StringBuffer sb = new StringBuffer();
+
+            String line = "";
+            while( ( line = br.readLine()) != null){
+                sb.append(line);
+            }
+
+            data = sb.toString();
+
+            br.close();
+
+        }catch(Exception e){
+            Log.d("Exception while downloading url", e.toString());
+        }finally{
+            iStream.close();
+            urlConnection.disconnect();
+        }
+        return data;
+    }
+
+}

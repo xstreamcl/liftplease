@@ -1,0 +1,97 @@
+<LinearLayout xmlns:fancy="http://schemas.android.com/apk/res-auto" xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:weightSum="100"
+    android:orientation="vertical"
+    tools:context=".MyActivity">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:layout_weight="50"
+        android:weightSum="100"
+        android:background="@android:color/background_light"
+        android:orientation="vertical" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textSize="22sp"
+            android:layout_weight="50"
+            android:textColor="#333333"
+            android:gravity="bottom"
+            android:text="Need to go somewhere?" />
+        <mehdi.sakout.fancybuttons.FancyButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingBottom="15dp"
+            android:paddingLeft="30dp"
+            android:paddingRight="30dp"
+            android:paddingTop="15dp"
+            android:layout_marginTop="30dp"
+            android:onClick="openPlacePicker"
+            android:layout_gravity="center_horizontal"
+            fancy:borderColor="#005BA9"
+            fancy:borderWidth="1dp"
+            fancy:textSize="12sp"
+            fancy:radius="30dp"
+            fancy:text=" Want lift"
+            fancy:defaultColor="#006dcc"
+            fancy:focusColor="#0044cc"
+            fancy:fontIconResource="&#xf087;"
+            fancy:iconPosition="left"
+            fancy:textColor="#FFFFFF" />
+    </LinearLayout>
+    <View
+        android:background="#f1f1f1"
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        />
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingLeft="16dp"
+        android:layout_weight="50"
+        android:paddingRight="16dp"
+        android:background="@android:color/background_light"
+        android:weightSum="100"
+        android:layout_centerHorizontal="true"
+        android:orientation="vertical" >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:textColor="#333333"
+            android:textSize="22sp"
+            android:gravity="bottom"
+            android:layout_weight="50"
+            android:text="Feeling Helpful?" />
+
+        <mehdi.sakout.fancybuttons.FancyButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingBottom="15dp"
+            android:paddingLeft="30dp"
+            android:paddingRight="30dp"
+            android:paddingTop="15dp"
+            android:layout_marginTop="30dp"
+            android:onClick="openPlacePicker"
+            android:layout_gravity="center_horizontal"
+            fancy:borderColor="#629400"
+            fancy:borderWidth="1dp"
+            fancy:textSize="12sp"
+            fancy:radius="30dp"
+            fancy:text=" Offer a lift"
+            fancy:defaultColor="#7ab800"
+            fancy:focusColor="#9bd823"
+            fancy:fontIconResource="&#xf1b9;"
+            fancy:iconPosition="left"
+            fancy:textColor="#FFFFFF" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:fancy="http://schemas.android.com/apk/res-auto" xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:orientation="vertical"
+    android:layout_height="fill_parent">
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical|center_horizontal"
+            android:textSize="18sp"
+            android:background="@android:color/background_light"
+            android:textColor="#999"
+            android:paddingLeft="10dp"
+            android:paddingRight="5dp"
+            android:text="To:" />
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <AutoCompleteTextView
+                android:id="@+id/autocomplete_places"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/background_light"
+                android:layout_gravity="center_horizontal"
+                android:singleLine="true"
+                android:lines="1"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:drawablePadding="3dp"
+                android:drawableLeft="@drawable/ic_location_on_black_24dp"
+                android:inputType="textNoSuggestions"
+                android:paddingLeft="0dp"
+                android:paddingRight="40dp"
+                android:hint="@string/autocomplete_hint"
+                android:textColor="@android:color/primary_text_light" />
+            <ImageButton
+                android:id="@+id/action_clear"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_cancel_black_24dp"
+                android:visibility="gone"
+                android:background="@null"
+                android:layout_marginTop="13dp"
+                android:layout_marginRight="10dp"
+                android:layout_alignParentRight="true" />
+            </RelativeLayout>
+        </LinearLayout>
+    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:id="@+id/map"
+        android:name="in.co.liftplease.myapplication.MapsActivity"
+        class="com.google.android.gms.maps.MapFragment" />
+</LinearLayout>
+
