@@ -71,8 +71,11 @@ class User(Resource):
     def post(self):
         args = post_parser.parse_args()
         app_id = str(uuid.uuid4())
-        next_id = lp_user.query.order_by(lp_user.lp_uid.desc()).first().lp_uid + 1
-        print next_id
+	if lp_user.query.order_by(lp_user.lp_uid.desc()).first().lp_uid != None:
+            next_id = lp_user.query.order_by(lp_user.lp_uid.desc()).first().lp_uid + 1
+        else:
+            next_id = 1
+	print next_id
         db.session.add(lp_user(next_id, app_id, args.g_id, args.display_name, args.gender, args.email, args.image_url, args.about_me, args.occupation, args.org_type, args.org_name, args.org_title, args.org_dept))
         db.session.commit()
         print len(lp_user.query.all())
