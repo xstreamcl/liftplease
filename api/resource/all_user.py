@@ -13,13 +13,14 @@ post_parser = parser.copy()
 # Response fields
 user_field = {
     'id': fields.Integer(attribute='lp_uid'),
+    'g_id': fields.String(attribute='g_id'),
     'app_id': fields.String(attribute='app_id'),
     'name': fields.String(attribute='display_name'),
     'gender': fields.String(attribute='gender'),
     'email': fields.String(attribute='email'),
     'image_uri': fields.String(attribute='image_url'),
-    'designation': fields.String(attribute='org_title'),
-    'department': fields.String(attribute='org_dept'),
+    'org_title': fields.String(attribute='org_title'),
+    'org name': fields.String(attribute='org_name'),
     'about': fields.String(attribute='about_me'),
 }
 
