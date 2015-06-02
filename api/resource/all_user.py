@@ -12,7 +12,8 @@ post_parser = parser.copy()
 
 # Response fields
 user_field = {
-    'id': fields.Integer(attribute='lp_uid'),
+    'uniq id': fields.Integer(attribute='lp_uid'),
+    'device_id': fields.String(attribute='device_id'),
     'g_id': fields.String(attribute='g_id'),
     'app_id': fields.String(attribute='app_id'),
     'name': fields.String(attribute='display_name'),

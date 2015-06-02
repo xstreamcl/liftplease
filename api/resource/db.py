@@ -16,34 +16,32 @@ db = SQLAlchemy(app)
 
 
 class lp_user(db.Model, DictSerializable):
-    lp_uid = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    app_id = db.Column(db.Text)
+    lp_uid = db.Column(db.Integer, primary_key=True)
+    device_id = db.Column(db.Text)
     g_id = db.Column(db.Text)
+    app_id = db.Column(db.Text)
+    phone = db.Column(db.Text)
     display_name = db.Column(db.Text)
     gender = db.Column(db.Text)
     email = db.Column(db.Text)
     image_url = db.Column(db.Text)
     about_me = db.Column(db.Text)
-    occupation = db.Column(db.Text)
-    org_type = db.Column(db.Text)
     org_name = db.Column(db.Text)
     org_title = db.Column(db.Text)
-    org_dept = db.Column(db.Text)
 
-    def __init__(self, lp_uid, app_id, g_id, display_name, gender, email, image_url, about_me, occupation, org_type, org_name, org_title, org_dept):
+    def __init__(self, lp_uid, device_id, g_id, app_id, phone, display_name, gender, email, image_url, about_me, org_name, org_title):
         self.lp_uid = lp_uid
-        self.app_id = app_id
+        self.device_id = device_id
         self.g_id = g_id
+        self.app_id = app_id
+        self.phone = phone
         self.display_name = display_name
         self.gender = gender
         self.email = email
         self.image_url = image_url
         self.about_me = about_me
-        self.occupation = occupation
-        self.org_type = org_type
         self.org_name = org_name
         self.org_title = org_title
-        self.org_dept = org_dept
 
 
 class lp_provider(db.Model, DictSerializable):

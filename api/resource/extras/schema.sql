@@ -7,13 +7,13 @@ drop table if exists lp_geo;
 
 create table lp_user (\
     lp_uid integer primary key,\
-    dev_id text not null,\
+    device_id text not null,\
     g_id text not null,\
     app_id text not null,\
-    phone text not null,\
-    display_name text not null,\
-    gender text not null,\
-    email text not null,\
+    phone text ,\
+    display_name text ,\
+    gender text ,\
+    email text ,\
     image_url blob,\
     about_me blob,\
     org_name text,\

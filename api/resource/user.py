@@ -1,6 +1,7 @@
 from flask_restful import fields, marshal_with, reqparse, Resource, inputs
 from db import db, lp_user, lp_provider, lp_subscriber
 import uuid
+import sys
 
 # !the final call on abstracting this and including it into a configuration file has to be made, so the code looks cleaner!
 
@@ -19,17 +20,16 @@ get_parser.add_argument( 'key', dest='app_id', type=str, required=True, help='Ap
 get_parser.add_argument( 'id', dest='lp_uid', type=int, required=True, help='The user\'s id' )
 
 ## post
+post_parser.add_argument( 'device_id', dest='device_id', type=str, required=True )
 post_parser.add_argument( 'g_id', dest='g_id', type=str, required=True )
-post_parser.add_argument( 'name', dest='display_name', type=str, required=True )
-post_parser.add_argument( 'gender', dest='gender', type=str, required=True )
-post_parser.add_argument( 'email', dest='email', type=str, required=True )
+post_parser.add_argument( 'phone', dest='phone', type=str, required=False )
+post_parser.add_argument( 'name', dest='display_name', type=str, required=False )
+post_parser.add_argument( 'gender', dest='gender', type=str, required=False )
+post_parser.add_argument( 'email', dest='email', type=str, required=False )
 post_parser.add_argument( 'image_uri', dest='image_url', type=str, required=False )
 post_parser.add_argument( 'about', dest='about_me', type=str, required=False )
-post_parser.add_argument( 'occupation', dest='occupation', type=str, required=False )
-post_parser.add_argument( 'org_type', dest='org_type', type=str, required=False )
 post_parser.add_argument( 'org_name', dest='org_name', type=str, required=False )
 post_parser.add_argument( 'org_title', dest='org_title', type=str, required=False )
-post_parser.add_argument( 'org_dept', dest='org_dept', type=str, required=False )
 
 # Response fields
 
@@ -46,9 +46,12 @@ get_field = {
 }
 
 post_field = {
-    'id': fields.Integer(attribute='lp_uid'),
-    'name': fields.String(attribute='display_name'),
-    'key': fields.String(attribute='app_id'),
+    'status' : fields.String(attribute='status')
+    ,'data' : {
+    'key': fields.String(attribute='app_id')
+    }
+    ,'messsage' : fields.String(attribute='messsage')
+    
 }
 
 # Resource class
@@ -70,14 +73,28 @@ class User(Resource):
     @marshal_with(post_field)
     def post(self):
         args = post_parser.parse_args()
+        user = None
         app_id = str(uuid.uuid4())
-    	if lp_user.query.all() != None:
-            next_id = lp_user.query.order_by(lp_user.lp_uid.desc()).first().lp_uid + 1
+        if bool(lp_user.query.all()) != False:
+            # does not check for unique
+            if args.g_id != lp_user.query.with_entities(lp_user.g_id).filter_by(device_id=args.device_id).first():
+                next_id = lp_user.query.order_by(lp_user.lp_uid.desc()).first().lp_uid + 1
+            else:
+               return User 
         else:
             next_id = 1
         print next_id
-        db.session.add(lp_user(next_id, app_id, args.g_id, args.display_name, args.gender, args.email, args.image_url, args.about_me, args.occupation, args.org_type, args.org_name, args.org_title, args.org_dept))
-        db.session.commit()
+        try:
+            db.session.add(lp_user(next_id, args.device_id, args.g_id, app_id, args.phone, args.display_name, args.gender, args.email, args.image_url, args.about_me, args.org_name, args.org_title))
+            db.session.commit()
+        except:
+            allerror = sys.exc_info()[0]
+            print "catch the exact exception chutiye"
+            user = {}
+            user['status'] = 'Failed'
+            user['messsage'] = 'Failed to register'
         print len(lp_user.query.all())
         user = lp_user.query.get(next_id)
+        user.status = 'OK'
+        user.messsage = 'successfully registered'
         return user

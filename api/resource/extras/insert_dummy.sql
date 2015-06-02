@@ -2,10 +2,9 @@ import sqlite3
 con=sqlite3.connect('./resource/lp.db')
 a=con.cursor()
 a.execute("insert into lp_user values (\
-2,'app_iadsddkjad',984756465654,'anirudhasdfas','male'\
+1,'dev122','gididid38','apppdididi','9938381928','nameanirudh','2'\
 ,'emasdfasdfail@fuckeasra.com','http://mysexy.photo.xx.coma1d091233=xx~!@#asdfk.c'\
-,'about me thea sdbiasgdgest lunndd huge bay','fuckingaa occup','org-tpyte','name of factory'\
-,'titke ofmanager','deptydadm')")
+,'about me thea sdbiasgdgest lunndd huge bay','org=flipkart','soft dev')")
 con.commit()
 a.execute("select * from lp_user")
 a.fetchall()
