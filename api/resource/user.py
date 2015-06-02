@@ -19,7 +19,7 @@ get_parser.add_argument( 'key', dest='app_id', type=str, required=True, help='Ap
 get_parser.add_argument( 'id', dest='lp_uid', type=int, required=True, help='The user\'s id' )
 
 ## post
-post_parser.add_argument( 'g_id', dest='g_id', type=int, required=True )
+post_parser.add_argument( 'g_id', dest='g_id', type=str, required=True )
 post_parser.add_argument( 'name', dest='display_name', type=str, required=True )
 post_parser.add_argument( 'gender', dest='gender', type=str, required=True )
 post_parser.add_argument( 'email', dest='email', type=str, required=True )
@@ -71,11 +71,11 @@ class User(Resource):
     def post(self):
         args = post_parser.parse_args()
         app_id = str(uuid.uuid4())
-	if lp_user.query.order_by(lp_user.lp_uid.desc()).first().lp_uid != None:
+    	if lp_user.query.all() != None:
             next_id = lp_user.query.order_by(lp_user.lp_uid.desc()).first().lp_uid + 1
         else:
             next_id = 1
-	print next_id
+        print next_id
         db.session.add(lp_user(next_id, app_id, args.g_id, args.display_name, args.gender, args.email, args.image_url, args.about_me, args.occupation, args.org_type, args.org_name, args.org_title, args.org_dept))
         db.session.commit()
         print len(lp_user.query.all())

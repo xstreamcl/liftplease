@@ -18,7 +18,7 @@ db = SQLAlchemy(app)
 class lp_user(db.Model, DictSerializable):
     lp_uid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     app_id = db.Column(db.Text)
-    g_id = db.Column(db.Integer)
+    g_id = db.Column(db.Text)
     display_name = db.Column(db.Text)
     gender = db.Column(db.Text)
     email = db.Column(db.Text)
