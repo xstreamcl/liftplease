@@ -13,6 +13,7 @@ post_parser = parser.copy()
 # Response fields
 user_field = {
     'id': fields.Integer(attribute='lp_uid'),
+    'app_id': fields.String(attribute='app_id'),
     'name': fields.String(attribute='display_name'),
     'gender': fields.String(attribute='gender'),
     'email': fields.String(attribute='email'),

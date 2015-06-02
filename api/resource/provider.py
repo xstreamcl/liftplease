@@ -54,9 +54,15 @@ class Provider(Resource):
         user = None
         provider = None
         if lp_user.query.filter_by(app_id=args.app_id).first() != None:
-            user = lp_user.query.get(args.lp_uid)
-            provider = lp_provider.query.get(args.lp_uid)
-        return user, provider
+            if lp_provider.query.filter_by(lp_uid=args.lp_uid).first() != None:
+                user = lp_user.query.get(args.lp_uid)
+                provider = lp_provider.query.get(args.lp_uid)
+                user.eta=provider.departtime
+                user.route=provider.encroute
+                print user.eta,user.route
+            else:
+                return user
+        return user
 
     @marshal_with(post_field)
     def post(self):
