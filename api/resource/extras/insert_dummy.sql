@@ -1,4 +1,7 @@
-a=con.execute("insert into lp_user values (\
+import sqlite3
+con=sqlite3.connect('./resource/lp.db')
+a=con.cursor()
+a.execute("insert into lp_user values (\
 2,'app_iadsddkjad',984756465654,'anirudhasdfas','male'\
 ,'emasdfasdfail@fuckeasra.com','http://mysexy.photo.xx.coma1d091233=xx~!@#asdfk.c'\
 ,'about me thea sdbiasgdgest lunndd huge bay','fuckingaa occup','org-tpyte','name of factory'\

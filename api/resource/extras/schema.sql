@@ -5,21 +5,20 @@ drop table if exists lp_match;
 drop table if exists lp_route;
 drop table if exists lp_geo;
 
-create table lp_user (
-    lp_uid integer primary key autoincrement,
-    app_id text not null,
-    g_id integer not null,
-    display_name text not null,
-    gender text not null,
-    email text not null,
-    image_url blob,
-    about_me blob,
-    occupation text,
-    org_type text,
-    org_name text,
-    org_title text,
-    org_dept text
-);
+create table lp_user (\
+    lp_uid integer primary key,\
+    dev_id text not null,\
+    g_id text not null,\
+    app_id text not null,\
+    phone text not null,\
+    display_name text not null,\
+    gender text not null,\
+    email text not null,\
+    image_url blob,\
+    about_me blob,\
+    org_name text,\
+    org_title text)
+;
 
 create table lp_provider (\
     lp_uid integer primary key,\
