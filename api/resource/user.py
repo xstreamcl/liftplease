@@ -77,15 +77,13 @@ class User(Resource):
         app_id = str(uuid.uuid4())
         if bool(lp_user.query.all()) != False:
             try:
-                if args.g_id != lp_user.query.with_entities(lp_user.g_id).filter_by(device_id=args.device_id,g_id=args.g_id).first().g_id:
-                    next_id = lp_user.query.order_by(lp_user.lp_uid.desc()).first().lp_uid + 1
-                else:
-                    user={}
-                    user['app_id'] = lp_user.query.with_entities(lp_user.app_id).filter_by(device_id=args.device_id,g_id=args.g_id).first().app_id
-                    user['status'] = 'OK'
-                    user['messsage'] = 'Already registered chutiye'
-                    print user
-                    return user
+                app_id = lp_user.query.filter_by(device_id=args.device_id,g_id=args.g_id).first().app_id
+                user={}
+                user['app_id'] = app_id
+                user['status'] = 'OK'
+                user['messsage'] = 'Already registered chutiye'
+                print user
+                return user
             except:
                 next_id = lp_user.query.order_by(lp_user.lp_uid.desc()).first().lp_uid + 1
         else:
