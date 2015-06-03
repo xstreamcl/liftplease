@@ -3,7 +3,6 @@ from db import db, lp_provider, lp_user, lp_subscriber
 import uuid
 from util import calculate_min_dist
 from polyline import GPolyCoder as gpc
-import json
 import collections
 
 # !the final call on abstracting this and including it into a configuration file has to be made, so the code looks cleaner!
@@ -96,7 +95,6 @@ class Provider(Resource):
             temp = collections.defaultdict(list)
             points = gpc().decode(args.encroute)
             point = points[-1]
-            print userd
             temp['lp_uid'] = userd['lp_uid']
             temp['display_name'] = userd['display_name']
             temp['departtime'] = subsd['departtime']
