@@ -76,11 +76,13 @@ class User(Resource):
         user = None
         app_id = str(uuid.uuid4())
         if bool(lp_user.query.all()) != False:
-            # does not check for unique
-            if args.g_id != lp_user.query.with_entities(lp_user.g_id).filter_by(device_id=args.device_id).first():
+            try:
+                if args.g_id != lp_user.query.with_entities(lp_user.g_id).filter_by(device_id=args.device_id,g_id=args.g_id).first().g_id:
+                    next_id = lp_user.query.order_by(lp_user.lp_uid.desc()).first().lp_uid + 1
+                else:
+                    return user
+            except:
                 next_id = lp_user.query.order_by(lp_user.lp_uid.desc()).first().lp_uid + 1
-            else:
-               return User 
         else:
             next_id = 1
         print next_id
@@ -90,9 +92,8 @@ class User(Resource):
         except:
             allerror = sys.exc_info()[0]
             print "catch the exact exception chutiye"
-            user = {}
             user['status'] = 'Failed'
-            user['messsage'] = 'Failed to register'
+            user['messsage'] = 'Failed to register-catch the exact exception chutiye'
         print len(lp_user.query.all())
         user = lp_user.query.get(next_id)
         user.status = 'OK'
