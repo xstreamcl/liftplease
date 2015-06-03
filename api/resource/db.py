@@ -47,7 +47,7 @@ class lp_user(db.Model, DictSerializable):
 class lp_provider(db.Model, DictSerializable):
     lp_uid = db.Column(db.Integer, primary_key=True)
     trip_creation_time = db.Column(db.Text)
-    routeid = db.Column(db.Integer)
+    routeid = db.Column(db.Text)
     encroute = db.Column(db.LargeBinary)
 
     def __init__(self, lp_uid, trip_creation_time, routeid, encroute):
@@ -59,7 +59,7 @@ class lp_provider(db.Model, DictSerializable):
 class lp_subscriber(db.Model, DictSerializable):
     lp_uid = db.Column(db.Integer, primary_key=True)
     trip_creation_time = db.Column(db.Text)
-    routeid = db.Column(db.Integer)
+    routeid = db.Column(db.Text)
     encroute = db.Column(db.LargeBinary)
 
     def __init__(self, lp_uid, trip_creation_time, routeid, encroute):
@@ -70,11 +70,11 @@ class lp_subscriber(db.Model, DictSerializable):
 
 
 class lp_match(db.Model, DictSerializable):
-    matchid = db.Column(db.Integer, primary_key=True)
+    matchid = db.Column(db.Text, primary_key=True)
     p_lp_uid = db.Column(db.Integer)
     s_lp_uid = db.Column(db.Integer)
-    p_routeid = db.Column(db.Integer)
-    s_routeid = db.Column(db.Integer)
+    p_routeid = db.Column(db.Text)
+    s_routeid = db.Column(db.Text)
     status = db.Column(db.Integer)
 
     def __init__(self, matchid, p_lp_uid, s_lp_uid, p_routeid, s_routeid, status):

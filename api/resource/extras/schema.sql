@@ -23,23 +23,23 @@ create table lp_user (\
 create table lp_provider (\
     lp_uid integer primary key,\
     trip_creation_time text not null,\
-    routeid integer not null,\
+    routeid text not null,\
     encroute blob not null)
 ;
 
 create table lp_subscriber (\
     lp_uid integer primary key,\
     trip_creation_time text not null,\
-    routeid integer not null,\
+    routeid text not null,\
     encroute blob not null)
 ;
 
-create table lp_match (
-    matchid integer primary key,
-    p_lp_uid integer not null,
-    s_lp_uid integer not null,
-    p_routeid integer not null,
-    s_routeid integer not null,
+create table lp_match (\
+    matchid text primary key,\
+    p_lp_uid integer not null,\
+    s_lp_uid integer not null,\
+    p_routeid text,\
+    s_routeid text,\
     status integer not null)
 ;
 
