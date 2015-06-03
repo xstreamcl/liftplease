@@ -100,6 +100,11 @@ public class LoginActivity extends Activity implements
         mGoogleApiClient.connect();
     }
 
+    protected void onResume() {
+        super.onResume();
+        mGoogleApiClient.connect();
+    }
+
     protected void onStop() {
         super.onStop();
         if (mGoogleApiClient.isConnected()) {
@@ -173,14 +178,6 @@ public class LoginActivity extends Activity implements
     }
 
     @Override
-    public void onBackPressed() {
-        Intent intent = new Intent(this, LoginActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.putExtra("EXIT", true);
-        startActivity(intent);
-    }
-
-    @Override
     public void onResult(People.LoadPeopleResult loadPeopleResult) {
         TelephonyManager tManager = (TelephonyManager)this.getSystemService(Context.TELEPHONY_SERVICE);
         device_id = tManager.getDeviceId();
@@ -191,9 +188,15 @@ public class LoginActivity extends Activity implements
             gender = String.valueOf(currentPerson.getGender());
             about = currentPerson.getAboutMe();
             image_uri = currentPerson.getImage().getUrl();
-            Person.Organizations org = currentPerson.getOrganizations().get(1);
-            org_name = org.getName();
-            org_title = org.getTitle();
+            List<Person.Organizations> organizationsList = currentPerson.getOrganizations();
+            int i = 0;
+            while (i < organizationsList.size()) {
+                if(organizationsList.get(i).getType() == 0){
+                    org_name = organizationsList.get(i).getName();
+                    org_title = organizationsList.get(i).getTitle();
+                }
+                i++;
+            }
         }
         if (Plus.AccountApi.getAccountName(mGoogleApiClient) != null) {
             email = Plus.AccountApi.getAccountName(mGoogleApiClient);

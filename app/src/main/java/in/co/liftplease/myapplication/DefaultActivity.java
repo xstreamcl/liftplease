@@ -10,19 +10,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.util.Log;
-import android.view.View;
-import android.content.Intent;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.Places;
-import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.plus.Plus;
-import com.google.android.gms.plus.model.people.Person;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -30,16 +23,12 @@ import java.util.HashMap;
 public class DefaultActivity extends ActionBarActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private GoogleApiClient mGoogleApiClient;
-    int PLACE_PICKER_REQUEST = 1;
     SessionManager session;
     String userProfileImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getIntent().getBooleanExtra("EXIT", false)) {
-            finish();
-        }
         setContentView(R.layout.activity_default);
         session = new SessionManager(getApplicationContext());
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -54,22 +43,6 @@ public class DefaultActivity extends ActionBarActivity implements GoogleApiClien
 
         HashMap<String, String> user = session.getUserDetails();
         userProfileImage = user.get(SessionManager.KEY_IMAGE);
-        new GetProfileImage().execute(userProfileImage);
-    }
-
-    public void openPlacePicker(View view) throws GooglePlayServicesNotAvailableException, GooglePlayServicesRepairableException {
-        Intent intent = new Intent(this, MapsActivity.class);
-        startActivity(intent);
-    }
-
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == PLACE_PICKER_REQUEST) {
-            if (resultCode == RESULT_OK) {
-                Place place = PlacePicker.getPlace(data, this);
-                String toastMsg = String.format("Place: %s", place.getName());
-                Toast.makeText(this, toastMsg, Toast.LENGTH_LONG).show();
-            }
-        }
     }
 
     @Override
@@ -89,6 +62,7 @@ public class DefaultActivity extends ActionBarActivity implements GoogleApiClien
         }
         if(session.isLoggedIn()){
             session.logoutUser();
+            finish();
         }
     }
 
@@ -97,8 +71,6 @@ public class DefaultActivity extends ActionBarActivity implements GoogleApiClien
         switch (item.getItemId()) {
             case R.id.action_logout:
                 logout();
-                return true;
-            case R.id.action_settings:
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -147,15 +119,18 @@ public class DefaultActivity extends ActionBarActivity implements GoogleApiClien
     @Override
     protected void onStart() {
         super.onStart();
-        mGoogleApiClient.connect();
     }
 
     @Override
-    public void onBackPressed() {
-//        Intent intent = new Intent(this, DefaultActivity.class);
-//        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//        intent.putExtra("EXIT", true);
-//        startActivity(intent);
-        finish();
+    protected void onResume() {
+        super.onStart();
+        new GetProfileImage().execute(userProfileImage);
+        mGoogleApiClient.connect();
+        int orientation = this.getResources().getConfiguration().orientation;
+        if(orientation == 2){
+            LinearLayout myll = (LinearLayout) findViewById(R.id.top_container);
+            myll.setOrientation(LinearLayout.HORIZONTAL);
+        }
     }
+
 }
