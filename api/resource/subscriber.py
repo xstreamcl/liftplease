@@ -4,6 +4,7 @@ import uuid
 from util import calculate_min_dist
 from polyline import GPolyCoder as gpc
 import collections
+import time
 
 # !the final call on abstracting this and including it into a configuration file has to be made, so the code looks cleaner!
 
@@ -22,8 +23,8 @@ get_parser.add_argument( 'key', dest='app_id', type=str, required=True, help='Ap
 get_parser.add_argument( 'id', dest='lp_uid', type=int, required=True, help='The user\'s id' )
 
 ## post
-post_parser.add_argument( 'g_id', dest='g_id', type=str, required=True )
-post_parser.add_argument( 'eta', dest='departtime', type=str, required=True )
+post_parser.add_argument( 'key', dest='app_id', type=str, required=True )
+#post_parser.add_argument( 'eta', dest='trip_creation_time', type=str, required=True )
 post_parser.add_argument( 'route', dest='encroute', type=str, required=True )
 
 # Response fields
@@ -38,7 +39,7 @@ get_field = {
     'department': fields.String(attribute='org_dept'),
     'about': fields.String(attribute='about_me'),
     'route': fields.String(attribute='encroute'),
-    'eta': fields.String(attribute='departtime'),
+    'eta': fields.String(attribute='trip_creation_time'),
 }
 
 post_geo = {
@@ -49,7 +50,7 @@ post_geo = {
 post_subfield = {
     'id': fields.Integer(attribute='lp_uid'),
     'name': fields.String(attribute='display_name'),
-    'departtime': fields.String(attribute='departtime'),
+    'trip_creation_time': fields.String(attribute='trip_creation_time'),
     'image': fields.String(attribute='image_url'),
     'distance': fields.String(attribute='distance'),
     'start': fields.Nested(post_geo),
@@ -57,6 +58,7 @@ post_subfield = {
 }
 
 post_field = {
+    'status' : fields.String(attribute='status'),
     'providers': fields.List(fields.Nested(post_subfield)),
 }
 
@@ -73,7 +75,7 @@ class Subscriber(Resource):
             if lp_subscriber.query.filter_by(lp_uid=args.lp_uid).first() != None:
                 user = lp_user.query.get(args.lp_uid)
                 subscriber = lp_subscriber.query.get(args.lp_uid)
-                user.eta=subscriber.departtime
+                user.eta=subscriber.trip_creation_time
                 user.route=subscriber.encroute
                 print user.eta,user.route
             else:
@@ -84,8 +86,9 @@ class Subscriber(Resource):
     def post(self):
         args = post_parser.parse_args()
         routeid = str(uuid.uuid4())
-        lp_uid = lp_user.query.with_entities(lp_user.lp_uid).filter_by(g_id=args.g_id).first()
-        db.session.add(lp_subscriber(lp_uid[0], args.departtime, routeid, args.encroute))
+        trip_creation_time = time.time()
+        lp_uid = lp_user.query.with_entities(lp_user.lp_uid).filter_by(app_id=args.app_id).first()
+        db.session.add(lp_subscriber(lp_uid[0], trip_creation_time, routeid, args.encroute))
         # find the distance
         listpros = collections.defaultdict(list)
         for pros, user in db.session.query(lp_provider, lp_user).join(lp_user, lp_provider.lp_uid == lp_user.lp_uid).all():
@@ -99,7 +102,7 @@ class Subscriber(Resource):
             point = points[-1]
             temp['lp_uid'] = userd['lp_uid']
             temp['display_name'] = userd['display_name']
-            temp['departtime'] = prosd['departtime']
+            temp['trip_creation_time'] = prosd['trip_creation_time']
             temp['image_url'] = userd['image_url']
             print prosd['encroute']
             temp['distance'] = calculate_min_dist(prosd['encroute'], point)
@@ -109,5 +112,6 @@ class Subscriber(Resource):
             (pointc['lat'], pointc['lng']) = points[-1]
             temp['stop'] = pointc
             listpros['providers'].append(temp)
+            listpros['status'] = 'OK'
         db.session.commit()
         return listpros

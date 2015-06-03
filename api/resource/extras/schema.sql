@@ -22,23 +22,14 @@ create table lp_user (\
 
 create table lp_provider (\
     lp_uid integer primary key,\
-    departtime text not null,\
+    trip_creation_time text not null,\
     routeid integer not null,\
     encroute blob not null)
 ;
 
-create table lp_provider (\
-    lp_uid integer not null,\
-    departtime text not null,\
-    routeid integer not null,\
-    encroute blob not null,\
-    primary key (lp_uid,departtime))
-);
-
-
 create table lp_subscriber (\
     lp_uid integer primary key,\
-    departtime real not null,\
+    trip_creation_time text not null,\
     routeid integer not null,\
     encroute blob not null)
 ;

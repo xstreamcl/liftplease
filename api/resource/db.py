@@ -46,25 +46,25 @@ class lp_user(db.Model, DictSerializable):
 
 class lp_provider(db.Model, DictSerializable):
     lp_uid = db.Column(db.Integer, primary_key=True)
-    departtime = db.Column(db.Text)
+    trip_creation_time = db.Column(db.Text)
     routeid = db.Column(db.Integer)
     encroute = db.Column(db.LargeBinary)
 
-    def __init__(self, lp_uid, departtime, routeid, encroute):
+    def __init__(self, lp_uid, trip_creation_time, routeid, encroute):
         self.lp_uid = lp_uid
-        self.departtime = departtime
+        self.trip_creation_time = trip_creation_time
         self.routeid = routeid
         self.encroute = encroute
 
 class lp_subscriber(db.Model, DictSerializable):
     lp_uid = db.Column(db.Integer, primary_key=True)
-    departtime = db.Column(db.Text)
+    trip_creation_time = db.Column(db.Text)
     routeid = db.Column(db.Integer)
     encroute = db.Column(db.LargeBinary)
 
-    def __init__(self, lp_uid, departtime, routeid, encroute):
+    def __init__(self, lp_uid, trip_creation_time, routeid, encroute):
         self.lp_uid = lp_uid
-        self.departtime = departtime
+        self.trip_creation_time = trip_creation_time
         self.routeid = routeid
         self.encroute = encroute
 
