@@ -57,9 +57,14 @@ post_subfield = {
     'stop': fields.Nested(post_geo),
 }
 
+data_field = {
+    'providers': fields.List(fields.Nested(post_subfield))   
+}
+
 post_field = {
     'status' : fields.String(attribute='status'),
-    'providers': fields.List(fields.Nested(post_subfield)),
+    'data' : data_field,
+    'message' : fields.String(attribute='message'),
 }
 
 # Resource class
@@ -94,8 +99,6 @@ class Subscriber(Resource):
         for pros, user in db.session.query(lp_provider, lp_user).join(lp_user, lp_provider.lp_uid == lp_user.lp_uid).all():
             prosd = pros._asdict()
             userd = user._asdict()
-            print prosd
-            print userd
             # there has to be a better way to do this!
             temp = collections.defaultdict(list)
             points = gpc().decode(args.encroute)
@@ -104,7 +107,6 @@ class Subscriber(Resource):
             temp['display_name'] = userd['display_name']
             temp['trip_creation_time'] = prosd['trip_creation_time']
             temp['image_url'] = userd['image_url']
-            print prosd['encroute']
             temp['distance'] = calculate_min_dist(prosd['encroute'], point)
             pointc = collections.defaultdict(dict)
             (pointc['lat'], pointc['lng']) = points[0]
@@ -113,5 +115,7 @@ class Subscriber(Resource):
             temp['stop'] = pointc
             listpros['providers'].append(temp)
             listpros['status'] = 'OK'
+            listpros['message'] = 'some message'
         db.session.commit()
+        print listpros
         return listpros
