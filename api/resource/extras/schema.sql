@@ -35,26 +35,28 @@ create table lp_subscriber (\
 ;
 
 create table lp_match (
-    matchid integer primary key autoincrement,
+    matchid integer primary key,
     p_lp_uid integer not null,
     s_lp_uid integer not null,
-    dropoffset real not null
-);
+    p_routeid integer not null,
+    s_routeid integer not null,
+    status integer not null)
+;
 
 create table lp_route (
-    routeid integer primary key autoincrement,
+    routeid integer primary key,
     lp_uid integer not null,
     start_lat real not null,
     start_lng real not null,
     end_lat real not null,
     end_lng real not null,
-    encroute blob not null
-);
+    encroute blob not null)
+;
 
 create table lp_geo (
     geoid integer primary key,
     lat real not null,
-    lng real not null
-);
+    lng real not null)
+;
 
 -- tail

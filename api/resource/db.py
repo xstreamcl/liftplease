@@ -73,13 +73,17 @@ class lp_match(db.Model, DictSerializable):
     matchid = db.Column(db.Integer, primary_key=True)
     p_lp_uid = db.Column(db.Integer)
     s_lp_uid = db.Column(db.Integer)
-    dropoffset = db.Column(db.Float)
+    p_routeid = db.Column(db.Integer)
+    s_routeid = db.Column(db.Integer)
+    status = db.Column(db.Integer)
 
-    def __init__(self, matchid, p_lp_uid, s_lp_uid, dropoffset):
+    def __init__(self, matchid, p_lp_uid, s_lp_uid, p_routeid, s_routeid, status):
         self.matchid = matchid
         self.p_lp_uid = p_lp_uid
         self.s_lp_uid = s_lp_uid
-        self.dropoffset = dropoffset
+        self.p_routeid = p_routeid
+        self.s_routeid = s_routeid
+        self.status = status
 
 
 #me = lp_provider(102, Text.now(), 100, 'IJDFY()*_#!^%&^@FMCfvb$IUO$&(UYIO&(SDFJD*(Uhdkjf')

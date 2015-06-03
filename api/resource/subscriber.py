@@ -50,9 +50,12 @@ post_geo = {
 post_subfield = {
     'id': fields.Integer(attribute='lp_uid'),
     'name': fields.String(attribute='display_name'),
+    'org_title' : fields.String(attribute='org_title'),
+    'trip_elapsed_time' : fields.String(attribute='trip_elapsed_time'),
     'trip_creation_time': fields.String(attribute='trip_creation_time'),
     'image': fields.String(attribute='image_url'),
     'distance': fields.String(attribute='distance'),
+    'provider route' : fields.String(attribute='route'),
     'start': fields.Nested(post_geo),
     'stop': fields.Nested(post_geo),
 }
@@ -104,8 +107,13 @@ class Subscriber(Resource):
             points = gpc().decode(args.encroute)
             point = points[-1]
             temp['lp_uid'] = userd['lp_uid']
-            temp['display_name'] = userd['display_name']
+            temp['org_title'] = userd['org_title']
+            temp['org_name'] = userd['org_name']
+            temp['route'] = prosd['encroute']
             temp['trip_creation_time'] = prosd['trip_creation_time']
+            temp['trip_elapsed_time'] = time.time()-float(prosd['trip_creation_time'])
+            print "trip_elapsed_time since trip", temp['trip_elapsed_time']
+            temp['display_name'] = userd['display_name']
             temp['image_url'] = userd['image_url']
             temp['distance'] = calculate_min_dist(prosd['encroute'], point)
             pointc = collections.defaultdict(dict)
