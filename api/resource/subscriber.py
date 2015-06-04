@@ -51,11 +51,12 @@ post_subfield = {
     'id': fields.Integer(attribute='lp_uid'),
     'name': fields.String(attribute='display_name'),
     'org_title' : fields.String(attribute='org_title'),
+    'org_name' : fields.String(attribute='org_name'),
     'trip_elapsed_time' : fields.String(attribute='trip_elapsed_time'),
     'trip_creation_time': fields.String(attribute='trip_creation_time'),
     'image': fields.String(attribute='image_url'),
     'distance': fields.String(attribute='distance'),
-    'provider route' : fields.String(attribute='route'),
+    'provider_route' : fields.String(attribute='route'),
     'start': fields.Nested(post_geo),
     'stop': fields.Nested(post_geo),
 }
