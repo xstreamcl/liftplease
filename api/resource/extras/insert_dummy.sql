@@ -91,3 +91,4 @@ NuDJuC?}@_@gEKoB@gAPqB`@eEz@yGhAaJV{DP{CDgFZuLLaDPqBLy@V{@jAsDt@uB|GoQjDiJZcANaA
 mBw_@A[I_Ao@aH{@aIiFyh@WyBMyAGw@Au@@YBs@LgCJsChAu]TcJTeGLwBt@yUZcHTgN?sBCmFIcKEqNMqUCgCUi\
 ISyH]yF}AuPo@}GGwA@qCBoDBcG?qCF{G?}FHmAh@eDDe@Ci@KYWc@e@k@g@c@sBu@iC_A{JmEyCkAu@CoAO}HeBoJsBqEcAoGmAgEk@uEa@@I')")
 
+a.execute("insert into lp_match values (1,34,33,'1010','e24ae72f-a9c1-4f1a-88ab-88ab181b5684',0)")

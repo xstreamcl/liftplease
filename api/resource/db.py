@@ -70,7 +70,7 @@ class lp_subscriber(db.Model, DictSerializable):
 
 
 class lp_match(db.Model, DictSerializable):
-    matchid = db.Column(db.Text, primary_key=True)
+    matchid = db.Column(db.Integer, primary_key=True)
     p_lp_uid = db.Column(db.Integer)
     s_lp_uid = db.Column(db.Integer)
     p_routeid = db.Column(db.Text)

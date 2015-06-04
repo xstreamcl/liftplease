@@ -35,7 +35,7 @@ create table lp_subscriber (\
 ;
 
 create table lp_match (\
-    matchid text primary key,\
+    matchid integer primary key,\
     p_lp_uid integer not null,\
     s_lp_uid integer not null,\
     p_routeid text,\
