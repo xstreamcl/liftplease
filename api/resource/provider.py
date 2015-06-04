@@ -2,6 +2,7 @@ from flask_restful import fields, marshal_with, reqparse, Resource, inputs
 from db import db, lp_provider, lp_user, lp_subscriber, lp_match
 import uuid
 import collections
+import time
 
 # !the final call on abstracting this and including it into a configuration file has to be made, so the code looks cleaner!
 
@@ -15,21 +16,23 @@ parser = reqparse.RequestParser()
 get_parser = parser.copy()
 post_parser = parser.copy()
 get_refresh_parser = parser.copy()
-post_refresh_parser = parser.copy()
+post_request_parser = parser.copy()
 
 ## get argumetns for provider class
-get_parser.add_argument( 'key', dest='app_id', type=str, required=True, help='Application id' )
+get_parser.add_argument( 'key', dest='app_id', type=str, required=True, help='App id of user making request' )
 get_parser.add_argument( 'id', dest='lp_uid', type=int, required=True, help='The user\'s id' )
+
 ## post arguments for provider calss
 post_parser.add_argument( 'key', dest='app_id', type=str, required=True )
 post_parser.add_argument( 'route', dest='encroute', type=str, required=True )
 
 ## get argugments for provider refresh class
-get_refresh_parser.add_argument( 'key', dest='app_id', type=str, required=True, help='Application id' )
-get_refresh_parser.add_argument( 'route', dest='encroute', type=int, required=True, help='The user\'s id' )
-## post arguments for provider refresh class 
-post_refresh_parser.add_argument( 'key', dest='app_id', type=str, required=True )
-post_refresh_parser.add_argument( 'id', dest='lp_uid', type=int, required=True )
+get_refresh_parser.add_argument( 'key', dest='app_id', type=str, required=True, help='App id of user making request' )
+get_refresh_parser.add_argument( 'route', dest='encroute', type=str, required=True, help='The user\'s id' )
+
+## post arguments for provider request class 
+post_request_parser.add_argument( 'key', dest='app_id', type=str, required=True, help='App id of user making request') 
+post_request_parser.add_argument( 'id', dest='lp_uid', type=int, required=True, help='lp_uid of the subscriber, the user wants to offer lift')
 
 # Response fields for provider class
 
@@ -75,7 +78,9 @@ get_refresh_field = {
     'message' : fields.String(attribute='message'),
 }
 
-post_refresh_field = {
+# Response fields for provider request class
+
+post_request_field = {
     'status': fields.String(attribute='status'),
     'message' : fields.String(attribute='message'),
     'data' : fields.String(attribute='data')
@@ -133,15 +138,18 @@ class Provider_Refresh(Resource):
         Get list of all subscribers interested in riding with a provider from match table
         '''
         args = get_refresh_parser.parse_args()
-        p_lp_uid = lp_user.query.filter_by(app_id=args.app_id).first.lp_uid
+        p_lp_uid = lp_user.query.filter_by(app_id=args.app_id).first().lp_uid
+        print "provider unique lp id" ,p_lp_uid
         listsubs = collections.defaultdict(list)
+        print "before try"
         try:
-            for subs, match, user in db.session.query(lp_subscriber, lp_match, lp_user)\
-            .join(lp_match, lp_subscriber.lp_uid == lp_match.s_lp_uid).filter_by(p_lp_uid=p_lp_uid,status=0)\
-            .join(lp_user, lp_subscriber.lp_uid == lp_user.lp_uid)\
-            .all():
+            print "insdie try"
+            for subs, match, user in db.session.query(lp_subscriber, lp_match, lp_user).join(lp_match, lp_subscriber.lp_uid == lp_match.s_lp_uid).filter_by(p_lp_uid=p_lp_uid,status=0).join(lp_user, lp_subscriber.lp_uid == lp_user.lp_uid).all():
+                print "inside for"
                 subsd = subs._asdict()
                 userd = user._asdict()
+                print "subscriber", subsd
+                print "user info", userd
                 temp = collections.defaultdict(list)
                 temp['lp_uid'] = userd['lp_uid']
                 temp['org_title'] = userd['org_title']
@@ -155,30 +163,50 @@ class Provider_Refresh(Resource):
                 listsubs['subscribers'].append(temp)
                 listsubs['status'] = 'OK'
                 listsubs['message'] = 'list of subscribers'
+                print "join output in for", listsubs
         except:
+            print "inside except"
+            listsubs['subscribers']='None'
+            listsubs['status'] = 'Failed'
+            listsubs['message'] = 'gotta catch the exception'
+        if len(listsubs)!=0:
+            return listsubs
+        else:
+            print "inside except"
             listsubs['subscribers']='None'
             listsubs['status'] = 'OK'
             listsubs['message'] = 'No subscribers'
-        print listsubs
+        print "before return", listsubs, len(listsubs)
         return listsubs
 
+    def post(self):
+        pass
 
-    @marshal_with(post_refresh_field)
+class Provider_Request(Resource):
+    def get(self):
+        pass
+
+    @marshal_with(post_request_field)
     def post(sef):
         '''
         Accept lift request from a subscriber 
         '''
-        args = post_refresh_parser.parse_args()
-        p_lp_uid = lp_user.query.filter_by(app_id=args.app_id).first.lp_uid
+        args = post_request_parser.parse_args()
+        p_lp_uid = lp_user.query.filter_by(app_id=args.app_id).first().lp_uid
+        post_reply={}
         try:
-            lp_match.query.filter_by(p_lp_uid=p_lp_uid,s_lp_uid=args.lp_uid).update({'status':1})
-            db.session.commit()
-            post_reply['status'] = 'OK'
-            post_reply['message'] = 'lift request from subscriber acccepted'
-            post_reply['data'] = 'null'
+            if lp_match.query.filter_by(p_lp_uid=p_lp_uid,s_lp_uid=args.lp_uid,status=0).update({'status':1})!=0:
+                db.session.commit() #doubt if I should do this?
+                post_reply['status'] = 'OK'
+                post_reply['message'] = 'lift request from subscriber acccepted'
+                post_reply['data'] = 'null'
+            else:
+                post_reply['status'] = 'Failed'
+                post_reply['message'] = 'The lift request can\'t be accepted right now'
+                post_reply['data'] = 'null'
         except:
-            post_reply['status'] = 'Failed'
-            post_reply['message'] = 'lift request cant be approved'
+            post_reply['status'] = 'Error'
+            post_reply['message'] = 'some error'
             post_reply['data'] = 'null'
         return post_reply
 

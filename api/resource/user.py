@@ -14,12 +14,14 @@ parser = reqparse.RequestParser()
 ## parser copy
 get_parser = parser.copy()
 post_parser = parser.copy()
+post_cancel_parser = parser.copy()
+get_cancel_parser = parser.copy()
 
-## get
+## get for User Class
 get_parser.add_argument( 'key', dest='app_id', type=str, required=True, help='Application id' )
 get_parser.add_argument( 'id', dest='lp_uid', type=int, required=True, help='The user\'s id' )
 
-## post
+## post for User Class
 post_parser.add_argument( 'device_id', dest='device_id', type=str, required=True )
 post_parser.add_argument( 'g_id', dest='g_id', type=str, required=True )
 post_parser.add_argument( 'phone', dest='phone', type=str, required=False )
@@ -30,6 +32,10 @@ post_parser.add_argument( 'image_uri', dest='image_url', type=str, required=Fals
 post_parser.add_argument( 'about', dest='about_me', type=str, required=False )
 post_parser.add_argument( 'org_name', dest='org_name', type=str, required=False )
 post_parser.add_argument( 'org_title', dest='org_title', type=str, required=False )
+
+## post for User Trip Cancel
+post_cancel_parser.add_argument('key'dest='app_id', type=str, required=True, help='Application id' )
+
 
 # Response fields
 
@@ -51,12 +57,24 @@ post_field = {
     'key': fields.String(attribute='app_id')
     }
     ,'messsage' : fields.String(attribute='messsage')
-    
+
 }
 
-# Resource class
+# Response user cancel trip 
+cancel_post_field = {
+    'status' : fields.String(attribute='status'),
+    'data' : fields.String(attribute='app_id'),
+    'messsage' : fields.String(attribute='messsage'),
+}
+
+
+# Resource classes
 
 class User(Resource):
+    """
+    user's main Resource class
+    """
+
     @marshal_with(get_field)
     def get(self):
         args = get_parser.parse_args()
@@ -103,3 +121,18 @@ class User(Resource):
         user.status = 'OK'
         user.messsage = 'successfully registered'
         return user
+
+class Cancel_Trip(Resource):
+    """
+    Cancel a user's existing trip. Right now deleting user trips in Provider/Subscriber/Match db created in last 30mins.
+    """
+    def get(self):
+        pass
+
+    @marshal_with(cancel_post_field)
+    def post(self):
+        args = post_cancel_parser.parse_args()
+        lp_uid = lp_user.query.filter_by(app_id=args.app_id).first().lp_uid
+        
+
+
