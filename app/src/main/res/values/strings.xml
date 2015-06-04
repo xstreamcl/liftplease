@@ -41,5 +41,9 @@
     <string name="title_activity_searchable">SearchableActivity</string>
     <string name="title_activity_trip">TripActivity</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_sub_trip_creation">Create a lift request</string>
+    <string name="title_activity_prov_trip_creation">Create a lift offer</string>
+    <string name="title_activity_sub_list">Select a left seeker</string>
+    <string name="title_activity_prov_list">Select a lift provider</string>
 
 </resources>

@@ -12,16 +12,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.util.Log;
-import android.widget.LinearLayout;
 import android.widget.Toast;
-
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.plus.Plus;
-
-import org.json.JSONArray;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -37,18 +31,18 @@ public class DefaultActivity extends ActionBarActivity implements GoogleApiClien
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_default);
         session = new SessionManager(getApplicationContext());
+        session.checkLogin();
+
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(Plus.API, Plus.PlusOptions.builder().build())
                 .addScope(Plus.SCOPE_PLUS_PROFILE)
                 .build();
-        mGoogleApiClient.connect();
-
-        session.checkLogin();
 
         HashMap<String, String> user = session.getUserDetails();
         userProfileImage = user.get(SessionManager.KEY_IMAGE);
+        new GetProfileImage().execute(userProfileImage);
     }
 
     @Override
@@ -83,17 +77,14 @@ public class DefaultActivity extends ActionBarActivity implements GoogleApiClien
         }
     }
 
-
     private class GetProfileImage extends AsyncTask<String, Void, Bitmap> {
 
         protected Bitmap doInBackground(String... urls) {
             String urldisplay = urls[0];
             Bitmap mIcon11 = null;
             try {
-
                 InputStream in = new java.net.URL(urldisplay).openStream();
                 mIcon11 = BitmapFactory.decodeStream(in);
-
             } catch (Exception e) {
                 Log.e("Error", e.getMessage());
                 e.printStackTrace();
@@ -125,11 +116,15 @@ public class DefaultActivity extends ActionBarActivity implements GoogleApiClien
     @Override
     protected void onStart() {
         super.onStart();
-        new GetProfileImage().execute(userProfileImage);
     }
 
-    public void openPlacePicker(View view) throws GooglePlayServicesNotAvailableException, GooglePlayServicesRepairableException {
-        Intent intent = new Intent(this, MapsActivity.class);
+    public void openSubTripCreationActivity(View view) {
+        Intent intent = new Intent(this, SubTripCreationActivity.class);
+        startActivity(intent);
+    }
+
+    public void openProvTripCreationActivity(View view) {
+        Intent intent = new Intent(this, ProvTripCreationActivity.class);
         startActivity(intent);
     }
 
@@ -137,11 +132,6 @@ public class DefaultActivity extends ActionBarActivity implements GoogleApiClien
     protected void onResume() {
         super.onResume();
         mGoogleApiClient.connect();
-        int orientation = this.getResources().getConfiguration().orientation;
-        if(orientation == 2){
-            LinearLayout myll = (LinearLayout) findViewById(R.id.top_container);
-            myll.setOrientation(LinearLayout.HORIZONTAL);
-        }
     }
 
 }

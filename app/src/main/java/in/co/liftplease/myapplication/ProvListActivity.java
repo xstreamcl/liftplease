@@ -1,52 +1,115 @@
 package in.co.liftplease.myapplication;
 
+import android.app.ListActivity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.os.Bundle;
-import android.app.ListFragment;
 import android.os.Handler;
+import android.support.v7.app.ActionBarActivity;
+import android.os.Bundle;
+import android.support.v7.internal.widget.AdapterViewCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
-/**
- * Created by yogesh.choudhary on 03/06/15.
- */
-public class ListViewDemoFragment extends ListFragment {
+
+public class ProvListActivity extends ActionBarActivity {
+
     SessionManager session;
     String userProfileImage;
     private Handler mHandler;
     private boolean mCountersActive;
     private ArrayList<ListViewItem> mItems = new ArrayList<ListViewItem>();
     private ArrayAdapter<ListViewItem> mListAdapter;
+    private JSONArray listToDisplay;
+    String session_id;
+    ListView listView;
 
-    public ListViewDemoFragment() {
+    public ProvListActivity() {
         mHandler = new Handler();
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_prov_list);
+        listView = (ListView) findViewById(android.R.id.list);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+                @Override
+                public void onItemClick(AdapterView<?> arg0, View view,int position, long id) {
+                    Object o = listView.getItemAtPosition(position);
+                    String pen = o.toString();
+                    Toast.makeText(getApplicationContext(), "You have chosen the pen: " + " " + pen, Toast.LENGTH_LONG).show();
+                }
+            }
+        );
+
+        mItems = new ArrayList<ListViewItem>();
+        session = new SessionManager(getApplicationContext());
+    }
+
+    public void onSuccess(){
+
+
+        JSONArray listArray = getListData();
+
+        for(int i = 0; i < listArray.length(); i++)
+        {
+            try {
+                JSONObject object = listArray.getJSONObject(i);
+                int trip_elapsed_time = (int) Double.parseDouble(object.getString("trip_elapsed_time"));
+                mItems.add(new ListViewItem(object.getString("image"), object.getString("name"), object.getString("org_title"), object.getString("org_name"), trip_elapsed_time));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // initialize and set the list adapter
+        mListAdapter = new ListViewDemoAdapter(getApplicationContext(), mItems);
+        listView.setAdapter(mListAdapter);
+        stopStart();
+    }
+
+    public JSONArray getListData(){
+        return this.listToDisplay;
     }
 
     private void stopStart() {
@@ -79,53 +142,9 @@ public class ListViewDemoFragment extends ListFragment {
         }
     };
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-
-        // initialize the items list
-        mItems = new ArrayList<ListViewItem>();
-        Resources resources = getResources();
-        session = new SessionManager(getActivity());
-
-        HashMap<String, String> user = session.getUserDetails();
-        userProfileImage = user.get(SessionManager.KEY_IMAGE);
-
-
-        JSONArray listArray = (JSONArray)((MapsActivity) getActivity()).getListData();
-
-        for(int i = 0; i < listArray.length(); i++)
-        {
-            try {
-                JSONObject object = listArray.getJSONObject(i);
-                int trip_elapsed_time = (int) Double.parseDouble(object.getString("trip_elapsed_time"));
-                mItems.add(new ListViewItem(object.getString("image"), object.getString("name"), object.getString("org_title"), object.getString("org_name"), trip_elapsed_time));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // initialize and set the list adapter
-        mListAdapter = new ListViewDemoAdapter(getActivity(), mItems);
-        setListAdapter(mListAdapter);
-        stopStart();
-    }
-
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        // remove the dividers from the ListView of the ListFragment
-//        getListView().setDivider(null);
-    }
-
-    @Override
-    public void onListItemClick(ListView l, View v, int position, long id) {
-        // retrieve theListView item
-        ListViewItem item = mItems.get(position);
-
-        // do something
-        Toast.makeText(getActivity(), item.name, Toast.LENGTH_SHORT).show();
+        //this returns you an object cast it into the same object you passed to your adapter cast to string if values passed were string
     }
 
     private class ListViewItem {
@@ -155,6 +174,29 @@ public class ListViewDemoFragment extends ListFragment {
                 time_elapsed--;
             }
         }
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_prov_list, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private class ListViewDemoAdapter extends ArrayAdapter<ListViewItem> {
@@ -264,4 +306,82 @@ public class ListViewDemoFragment extends ListFragment {
             return null;
         }
     }
+    private class MyAsyncTask extends AsyncTask<String, Integer, String>{
+
+        @Override
+        protected String doInBackground(String... params) {
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpPost httppost = new HttpPost("http://whenisdryday.in:5000/subscriber");
+
+            List nameValuedPairs = new ArrayList();
+            nameValuedPairs.add(new BasicNameValuePair("route", params[0]));
+            nameValuedPairs.add(new BasicNameValuePair("key", params[1]));
+            try {
+                // UrlEncodedFormEntity is an entity composed of a list of url-encoded pairs.
+                //This is typically useful while sending an HTTP POST request.
+                UrlEncodedFormEntity urlEncodedFormEntity = new UrlEncodedFormEntity(nameValuedPairs);
+
+                // setEntity() hands the entity (here it is urlEncodedFormEntity) to the request.
+                httppost.setEntity(urlEncodedFormEntity);
+
+                try {
+                    // HttpResponse is an interface just like HttpPost.
+                    //Therefore we can't initialize them
+                    HttpResponse httpResponse = httpclient.execute(httppost);
+
+                    // According to the JAVA API, InputStream constructor do nothing.
+                    //So we can't initialize InputStream although it is not an interface
+                    InputStream inputStream = httpResponse.getEntity().getContent();
+
+                    InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+
+                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+
+                    StringBuilder stringBuilder = new StringBuilder();
+
+                    String bufferedStrChunk = null;
+
+                    while((bufferedStrChunk = bufferedReader.readLine()) != null){
+                        stringBuilder.append(bufferedStrChunk);
+                    }
+
+                    return stringBuilder.toString();
+
+                } catch (ClientProtocolException cpe) {
+                    System.out.println("First Exception caz of HttpResponese :" + cpe);
+                    cpe.printStackTrace();
+                } catch (IOException ioe) {
+                    System.out.println("Second Exception caz of HttpResponse :" + ioe);
+                    ioe.printStackTrace();
+                }
+
+            } catch (UnsupportedEncodingException uee) {
+                System.out.println("An Exception given because of UrlEncodedFormEntity argument :" + uee);
+                uee.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            try {
+                JSONObject jObject = new JSONObject(result);
+                JSONObject dataObject = jObject.getJSONObject("data");
+                listToDisplay = dataObject.getJSONArray("providers");
+                onSuccess();
+            } catch (JSONException e) {
+                Log.e("JSONException", "Error: " + e.toString());
+            }
+        }
+
+    }
+    protected void onResume() {
+        super.onResume();
+        HashMap<String, String> user = session.getUserDetails();
+        session_id = user.get(SessionManager.KEY_SESSION);
+        Intent intent = getIntent();
+        String route = intent.getStringExtra("route");
+        new MyAsyncTask().execute(route,session_id);
+    }
+
 }

@@ -11,17 +11,15 @@
     <RelativeLayout android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:background="#FFFFFF"
-        android:layout_marginBottom="1dp"
         android:padding="10dp">
 
         <!-- the icon view -->
         <ImageView android:id="@+id/image_uri"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="5dp"
-            android:contentDescription="Some description"
-            android:scaleType="fitXY"
+            android:contentDescription="User profile image"
             android:layout_alignParentLeft="true"
+            android:padding="5dp"
             android:layout_marginRight="5dp"/>
 
         <!-- the container view for the title and description -->
@@ -34,14 +32,20 @@
             <TextView android:id="@+id/name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="#000000"
                 android:textAppearance="@android:style/TextAppearance.Medium" />
-
-            <TextView android:id="@+id/org_title"
+            <TextView android:id="@+id/org_info"
                 android:layout_below="@id/name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="@android:style/TextAppearance.Small" />
         </RelativeLayout>
+
+        <TextView android:id="@+id/time_elapsed"
+            android:layout_alignParentRight="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@android:style/TextAppearance.Small" />
 
     </RelativeLayout>
 

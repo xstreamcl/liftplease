@@ -1,8 +1,7 @@
 package in.co.liftplease.myapplication;
 
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.graphics.Color;
 import android.location.Location;
@@ -18,13 +17,11 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceBuffer;
 import com.google.android.gms.location.places.Places;
@@ -39,21 +36,12 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -61,7 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 
 
-public class MapsActivity extends ActionBarActivity implements
+public class SubTripCreationActivity extends ActionBarActivity implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
@@ -72,16 +60,12 @@ public class MapsActivity extends ActionBarActivity implements
     private PlaceAutocompleteAdapter mAdapter;
     private AutoCompleteTextView mAutocompleteView;
     private Location sLocation;
-    private LinearLayout mAutocompleteBox;
     private Location dLocation;
     private Marker sLocationMarker;
     private Marker dLocationMarker = null;
     private ImageButton clearButton;
     private List<Polyline> polylines = new ArrayList<Polyline>();
-    private String encroute;
-    private String session_id;
-    private JSONArray listToDisplay;
-    FragmentManager fm;
+    private String route;
     SessionManager session;
 
 
@@ -94,7 +78,10 @@ public class MapsActivity extends ActionBarActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
         session = new SessionManager(getApplicationContext());
+        session.checkLogin();
+
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -113,30 +100,12 @@ public class MapsActivity extends ActionBarActivity implements
             }
         });
 
-        mAutocompleteBox = (LinearLayout)findViewById(R.id.autocomplete_box);
-
         mAutocompleteView = (AutoCompleteTextView)findViewById(R.id.autocomplete_places);
         mAutocompleteView.setOnItemClickListener(mAutocompleteClickListener);
         mAdapter = new PlaceAutocompleteAdapter(this, android.R.layout.simple_list_item_1,
                 mGoogleApiClient, BOUNDS_GREATER_INDIA, null);
         mAutocompleteView.setAdapter(mAdapter);
-
     }
-
-
-    public void onSuccess(){
-        fm = getFragmentManager();
-        hideFragment(fm.findFragmentById(R.id.map));
-        mAutocompleteBox.setVisibility(View.GONE);
-        setTitle("All list provider");
-
-        FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        ListViewDemoFragment newFragment = new ListViewDemoFragment();
-        fragmentTransaction.add(R.id.fragment_container, newFragment, "LIST_FRAGMENT");
-        fragmentTransaction.commit();
-    }
-
 
     public MyLocation.LocationResult locationResult = new MyLocation.LocationResult(){
         public void gotLocation(final Location location){
@@ -150,22 +119,6 @@ public class MapsActivity extends ActionBarActivity implements
             }
         }
     };
-
-    public void showFragment(android.app.Fragment fragment){
-        fm = getFragmentManager();
-        fm.beginTransaction()
-                .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out)
-                .show(fragment)
-                .commit();
-    }
-
-    public void hideFragment(android.app.Fragment fragment){
-        fm = getFragmentManager();
-        fm.beginTransaction()
-                .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out)
-                .hide(fragment)
-                .commit();
-    }
 
     public void showRoute(){
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
@@ -225,7 +178,7 @@ public class MapsActivity extends ActionBarActivity implements
             dLocationMarker.showInfoWindow();
             showRoute();
 
-            MapsActivity.mainMenu.findItem(R.id.action_done).setVisible(true);
+            mainMenu.findItem(R.id.action_done).setVisible(true);
 
             String url = getDirectionsUrl(dest);
             DownloadTask downloadTask = new DownloadTask();
@@ -304,7 +257,7 @@ public class MapsActivity extends ActionBarActivity implements
                 jObject = new JSONObject(jsonData[0]);
                 JSONArray jRoutes = jObject.getJSONArray("routes");
                 JSONObject jroute = ( (JSONObject)jRoutes.get(0)).getJSONObject("overview_polyline");
-                encroute = jroute.getString("points");
+                route = jroute.getString("points");
 
                 DirectionsJSONParser parser = new DirectionsJSONParser();
                 routes = parser.parse(jObject);
@@ -413,7 +366,6 @@ public class MapsActivity extends ActionBarActivity implements
     public void onConnectionFailed(ConnectionResult connectionResult) {
         if (connectionResult.hasResolution()) {
             try {
-                // Start an Activity that tries to resolve the error
                 connectionResult.startResolutionForResult(this, CONNECTION_FAILURE_RESOLUTION_REQUEST);
             } catch (IntentSender.SendIntentException e) {
                 e.printStackTrace();
@@ -428,84 +380,10 @@ public class MapsActivity extends ActionBarActivity implements
         handleNewLocation(location);
     }
 
-    private class MyAsyncTask extends AsyncTask<String, Integer, String>{
-
-        @Override
-        protected String doInBackground(String... params) {
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost("http://whenisdryday.in:5000/subscriber");
-
-            List nameValuedPairs = new ArrayList();
-            nameValuedPairs.add(new BasicNameValuePair("route", params[0]));
-            nameValuedPairs.add(new BasicNameValuePair("key", params[1]));
-            try {
-                // UrlEncodedFormEntity is an entity composed of a list of url-encoded pairs.
-                //This is typically useful while sending an HTTP POST request.
-                UrlEncodedFormEntity urlEncodedFormEntity = new UrlEncodedFormEntity(nameValuedPairs);
-
-                // setEntity() hands the entity (here it is urlEncodedFormEntity) to the request.
-                httppost.setEntity(urlEncodedFormEntity);
-
-                try {
-                    // HttpResponse is an interface just like HttpPost.
-                    //Therefore we can't initialize them
-                    HttpResponse httpResponse = httpclient.execute(httppost);
-
-                    // According to the JAVA API, InputStream constructor do nothing.
-                    //So we can't initialize InputStream although it is not an interface
-                    InputStream inputStream = httpResponse.getEntity().getContent();
-
-                    InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-
-                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-
-                    StringBuilder stringBuilder = new StringBuilder();
-
-                    String bufferedStrChunk = null;
-
-                    while((bufferedStrChunk = bufferedReader.readLine()) != null){
-                        stringBuilder.append(bufferedStrChunk);
-                    }
-
-                    return stringBuilder.toString();
-
-                } catch (ClientProtocolException cpe) {
-                    System.out.println("First Exception caz of HttpResponese :" + cpe);
-                    cpe.printStackTrace();
-                } catch (IOException ioe) {
-                    System.out.println("Second Exception caz of HttpResponse :" + ioe);
-                    ioe.printStackTrace();
-                }
-
-            } catch (UnsupportedEncodingException uee) {
-                System.out.println("An Exception given because of UrlEncodedFormEntity argument :" + uee);
-                uee.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            try {
-                JSONObject jObject = new JSONObject(result);
-                JSONObject dataObject = jObject.getJSONObject("data");
-                listToDisplay = dataObject.getJSONArray("providers");
-                onSuccess();
-            } catch (JSONException e) {
-                Log.e("JSONException", "Error: " + e.toString());
-            }
-        }
-
-    }
-
-    public JSONArray getListData(){
-        return this.listToDisplay;
-    }
-
     public void addSubscriberToTable(){
-        HashMap<String, String> user = session.getUserDetails();
-        session_id = user.get(SessionManager.KEY_SESSION);
-        new MyAsyncTask().execute(encroute,session_id);
+        Intent intent = new Intent(this, ProvListActivity.class);
+        intent.putExtra("route", route);
+        startActivity(intent);
     }
 
     @Override
