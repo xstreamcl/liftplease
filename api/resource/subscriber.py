@@ -1,10 +1,11 @@
 from flask_restful import fields, marshal_with, reqparse, Resource, inputs
-from db import db, lp_provider, lp_user, lp_subscriber
+from db import db, lp_provider, lp_user, lp_subscriber, lp_match
 import uuid
 from util import calculate_min_dist
 from polyline import GPolyCoder as gpc
 import collections
 import time
+import json
 
 # !the final call on abstracting this and including it into a configuration file has to be made, so the code looks cleaner!
 
@@ -17,10 +18,14 @@ parser = reqparse.RequestParser()
 ## parser copy
 get_parser = parser.copy()
 post_parser = parser.copy()
-
+get_request_status = parser.copy()
 ## get
 get_parser.add_argument( 'key', dest='app_id', type=str, required=True, help='Application id' )
 get_parser.add_argument( 'id', dest='lp_uid', type=int, required=True, help='The user\'s id' )
+
+## get
+get_request_status.add_argument( 'key', dest='app_id', type=str, required=True, help='Application id' )
+get_request_status.add_argument( 'provider', dest='pid', type=int, required=True, help='The user\'s id' )
 
 ## post
 post_parser.add_argument( 'key', dest='app_id', type=str, required=True )
@@ -62,12 +67,29 @@ post_subfield = {
 }
 
 data_field = {
-    'providers': fields.List(fields.Nested(post_subfield))   
+    'providers': fields.List(fields.Nested(post_subfield))
 }
 
 post_field = {
     'status' : fields.String(attribute='status'),
     'data' : data_field,
+    'message' : fields.String(attribute='message'),
+}
+
+
+post_field_request = {
+    'status' : fields.String(attribute='status'),
+    'data' : fields.String(attribute='status'),
+    'message' : fields.String(attribute='message'),
+}
+
+request_status = {
+    'status': fields.String(attribute='statusinner'),
+}
+
+get_field_request_status = {
+    'status' : fields.String(attribute='status'),
+    'data' : fields.Nested(request_status),
     'message' : fields.String(attribute='message'),
 }
 
@@ -128,3 +150,95 @@ class Subscriber(Resource):
         db.session.commit()
         print listpros
         return listpros
+
+class SubscriberRefresh(Resource):
+    @marshal_with(get_field)
+    def get(self):
+        args = post_parser.parse_args()
+        # find the distance
+        listpros = collections.defaultdict(list)
+        for pros, user in db.session.query(lp_provider, lp_user).join(lp_user, lp_provider.lp_uid == lp_user.lp_uid).all():
+            prosd = pros._asdict()
+            userd = user._asdict()
+            # there has to be a better way to do this!
+            temp = collections.defaultdict(list)
+            points = gpc().decode(args.encroute)
+            point = points[-1]
+            temp['lp_uid'] = userd['lp_uid']
+            temp['org_title'] = userd['org_title']
+            temp['org_name'] = userd['org_name']
+            temp['route'] = prosd['encroute']
+            temp['trip_creation_time'] = prosd['trip_creation_time']
+            temp['trip_elapsed_time'] = time.time()-float(prosd['trip_creation_time'])
+            print "trip_elapsed_time since trip", temp['trip_elapsed_time']
+            temp['display_name'] = userd['display_name']
+            temp['image_url'] = userd['image_url']
+            temp['distance'] = calculate_min_dist(prosd['encroute'], point)
+            pointc = collections.defaultdict(dict)
+            (pointc['lat'], pointc['lng']) = points[0]
+            temp['start'] = pointc
+            (pointc['lat'], pointc['lng']) = points[-1]
+            temp['stop'] = pointc
+            listpros['providers'].append(temp)
+            listpros['status'] = 'OK'
+            listpros['message'] = 'some message'
+        db.session.commit()
+        print listpros
+        return listpros
+
+    @marshal_with(post_field)
+    def post(self):
+        pass
+
+
+class SubscriberRequest(Resource):
+    @marshal_with(get_field)
+    def get(self):
+        pass
+
+    @marshal_with(post_field_request)
+    def post(self):
+        args = get_request_status.parse_args()
+        rval = collections.defaultdict(dict)
+        rval['status'] = 'error'
+        rval['data'] = 'NA'
+        rval['message'] = 'message'
+        print args
+        next_id = lp_match.query.order_by(lp_match.matchid.desc()).first().matchid + 1
+        user = db.session.query(lp_user).filter_by(app_id = args.app_id).first()
+        pquery = db.session.query(lp_provider).filter_by(lp_uid = args.pid).first()
+        if user == None or pquery == None:
+            return rval
+        sid = user._asdict()['lp_uid']
+        subs = db.session.query(lp_subscriber).filter_by(lp_uid = sid).first()
+        if subs == None:
+            return rval
+        sroute = subs._asdict()['encroute']
+        proute = pquery._asdict()['encroute']
+        db.session.add(lp_match(next_id, args.pid, sid, proute, sroute, 'False'))
+        db.session.commit()
+        rval['status'] = 'ok'
+        return rval
+
+
+class SubscriberRequestStatus(Resource):
+    @marshal_with(get_field_request_status)
+    def get(self):
+        args = get_request_status.parse_args()
+        rval = collections.defaultdict(dict)
+        rval['status'] = 'ok'
+        rval['data']['statusinner'] = 'False'
+        rval['message'] = 'message'
+        sid = db.session.query(lp_user).filter_by(app_id = args.app_id).first()
+        if sid == None:
+            return rval
+        sid = sid._asdict()['lp_uid']
+        status = db.session.query(lp_match).filter_by(p_lp_uid = args.pid, s_lp_uid = sid).first()
+        if status == None:
+            return rval
+        rval['data']['statusinner'] = status._asdict()['status']
+        return rval
+
+    @marshal_with(post_field)
+    def post(self):
+        pass
