@@ -44,15 +44,12 @@
             <!--android:value="AIzaSyCK_jjc3Fzzduu-eNtVMVp5Y-Gw-9bDGJI" />-->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyAJESnpe8r8e8BtTLCb-aeplVUC04aG3jY" />
+            android:value="AIzaSyA0BjhejZyayZcpB1Q4nsMu_aIMrSFZ0LY" />
 
         <activity
             android:name=".MapsActivity"
             android:label="Create a trip"
             android:screenOrientation="portrait" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="in.co.liftplease.myapplication.DefaultActivity" />
         </activity>
         <activity
             android:name=".MainActivity"

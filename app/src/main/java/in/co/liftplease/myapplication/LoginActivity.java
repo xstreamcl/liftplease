@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
@@ -81,6 +80,7 @@ public class LoginActivity extends Activity implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        session = new SessionManager(getApplicationContext());
         spinner = (ProgressBar)findViewById(R.id.progressBar1);
         signInText = (TextView)findViewById(R.id.sign_in_text);
         signInButton = (SignInButton)findViewById(R.id.sign_in_button);
@@ -92,12 +92,11 @@ public class LoginActivity extends Activity implements
                 .addScope(Plus.SCOPE_PLUS_LOGIN)
                 .addScope(Plus.SCOPE_PLUS_PROFILE)
                 .build();
-        session = new SessionManager(getApplicationContext());
+
     }
 
     protected void onStart() {
         super.onStart();
-        mGoogleApiClient.connect();
     }
 
     protected void onResume() {
@@ -179,6 +178,18 @@ public class LoginActivity extends Activity implements
 
     @Override
     public void onResult(People.LoadPeopleResult loadPeopleResult) {
+        if (Plus.AccountApi.getAccountName(mGoogleApiClient) != null) {
+            email = Plus.AccountApi.getAccountName(mGoogleApiClient);
+        }
+        if(!email.endsWith("@flipkart.com")){
+            Plus.AccountApi.clearDefaultAccount(mGoogleApiClient);
+            mGoogleApiClient.disconnect();
+            signInButton.setVisibility(View.VISIBLE);
+            signInText.setVisibility(View.VISIBLE);
+            spinner.setVisibility(View.GONE);
+            Toast.makeText(this, "Access restricted to Flipkart employees only", Toast.LENGTH_LONG).show();
+            return;
+        }
         TelephonyManager tManager = (TelephonyManager)this.getSystemService(Context.TELEPHONY_SERVICE);
         device_id = tManager.getDeviceId();
         if (Plus.PeopleApi.getCurrentPerson(mGoogleApiClient) != null) {
@@ -189,17 +200,16 @@ public class LoginActivity extends Activity implements
             about = currentPerson.getAboutMe();
             image_uri = currentPerson.getImage().getUrl();
             List<Person.Organizations> organizationsList = currentPerson.getOrganizations();
-            int i = 0;
-            while (i < organizationsList.size()) {
-                if(organizationsList.get(i).getType() == 0){
-                    org_name = organizationsList.get(i).getName();
-                    org_title = organizationsList.get(i).getTitle();
+            if(organizationsList != null){
+                int i = 0;
+                while (i < organizationsList.size()) {
+                    if(organizationsList.get(i).getType() == 0){
+                        org_name = organizationsList.get(i).getName();
+                        org_title = organizationsList.get(i).getTitle();
+                    }
+                    i++;
                 }
-                i++;
             }
-        }
-        if (Plus.AccountApi.getAccountName(mGoogleApiClient) != null) {
-            email = Plus.AccountApi.getAccountName(mGoogleApiClient);
         }
         new MyAsyncTask().execute(g_id,name,gender,email,image_uri,org_name,org_title,device_id,about);
     }
@@ -268,9 +278,11 @@ public class LoginActivity extends Activity implements
 
         @Override
         protected void onPostExecute(String result) {
+            String result1 = result;
             try {
                 JSONObject jObject = new JSONObject(result);
-                String key = jObject.getString("key");
+                JSONObject dataObject = jObject.getJSONObject("data");
+                String key = dataObject.getString("key");
                 session.createLoginSession(name,email,image_uri,key,"0");
                 proceed();
             } catch (JSONException e) {

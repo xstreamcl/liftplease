@@ -1,5 +1,6 @@
 package in.co.liftplease.myapplication;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -8,14 +9,19 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
 import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.plus.Plus;
+
+import org.json.JSONArray;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -119,12 +125,17 @@ public class DefaultActivity extends ActionBarActivity implements GoogleApiClien
     @Override
     protected void onStart() {
         super.onStart();
+        new GetProfileImage().execute(userProfileImage);
+    }
+
+    public void openPlacePicker(View view) throws GooglePlayServicesNotAvailableException, GooglePlayServicesRepairableException {
+        Intent intent = new Intent(this, MapsActivity.class);
+        startActivity(intent);
     }
 
     @Override
     protected void onResume() {
-        super.onStart();
-        new GetProfileImage().execute(userProfileImage);
+        super.onResume();
         mGoogleApiClient.connect();
         int orientation = this.getResources().getConfiguration().orientation;
         if(orientation == 2){

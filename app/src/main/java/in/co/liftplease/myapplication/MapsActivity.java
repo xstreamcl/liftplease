@@ -1,34 +1,30 @@
 package in.co.liftplease.myapplication;
 
-import android.app.ProgressDialog;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.IntentSender;
 import android.graphics.Color;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
-import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.Toast;
-
+import android.widget.LinearLayout;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceBuffer;
 import com.google.android.gms.location.places.Places;
@@ -43,21 +39,27 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import mehdi.sakout.fancybuttons.FancyButton;
 
 public class MapsActivity extends ActionBarActivity implements
         GoogleApiClient.ConnectionCallbacks,
@@ -71,12 +73,17 @@ public class MapsActivity extends ActionBarActivity implements
     private PlaceAutocompleteAdapter mAdapter;
     private AutoCompleteTextView mAutocompleteView;
     private Location sLocation;
+    private LinearLayout mAutocompleteBox;
     private Location dLocation;
     private Marker sLocationMarker;
     private Marker dLocationMarker = null;
     private ImageButton clearButton;
     private List<Polyline> polylines = new ArrayList<Polyline>();
-
+    private String encroute;
+    private String session_id;
+    private JSONArray listToDisplay;
+    FragmentManager fm;
+    SessionManager session;
 
 
     public static final String TAG = MapsActivity.class.getSimpleName();
@@ -88,7 +95,7 @@ public class MapsActivity extends ActionBarActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        session = new SessionManager(getApplicationContext());
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -112,14 +119,31 @@ public class MapsActivity extends ActionBarActivity implements
             }
         });
 
-        mAutocompleteView = (AutoCompleteTextView)findViewById(R.id.autocomplete_places);
+        mAutocompleteBox = (LinearLayout)findViewById(R.id.autocomplete_box);
 
+
+        mAutocompleteView = (AutoCompleteTextView)findViewById(R.id.autocomplete_places);
         mAutocompleteView.setOnItemClickListener(mAutocompleteClickListener);
         mAdapter = new PlaceAutocompleteAdapter(this, android.R.layout.simple_list_item_1,
                 mGoogleApiClient, BOUNDS_GREATER_INDIA, null);
         mAutocompleteView.setAdapter(mAdapter);
 
     }
+
+
+    public void onSuccess(){
+        fm = getFragmentManager();
+        hideFragment(fm.findFragmentById(R.id.map));
+        mAutocompleteBox.setVisibility(View.GONE);
+        setTitle("All list provider");
+
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        ListViewDemoFragment newFragment = new ListViewDemoFragment();
+        fragmentTransaction.add(R.id.fragment_container, newFragment, "LIST_FRAGMENT");
+        fragmentTransaction.commit();
+    }
+
 
     public MyLocation.LocationResult locationResult = new MyLocation.LocationResult(){
         public void gotLocation(final Location location){
@@ -134,19 +158,34 @@ public class MapsActivity extends ActionBarActivity implements
         }
     };
 
+    public void showFragment(android.app.Fragment fragment){
+        fm = getFragmentManager();
+        fm.beginTransaction()
+                .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out)
+                .show(fragment)
+                .commit();
+    }
+
+    public void hideFragment(android.app.Fragment fragment){
+        fm = getFragmentManager();
+        fm.beginTransaction()
+                .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out)
+                .hide(fragment)
+                .commit();
+    }
+
     public void showRoute(){
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         builder.include(sLocationMarker.getPosition());
         builder.include(dLocationMarker.getPosition());
         LatLngBounds bounds = builder.build();
-        int padding = 100; // offset from edges of the map in pixels
+        int padding = 100;
         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
         mMap.animateCamera(cu);
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
         this.mainMenu = menu;
-        // Inflate the menu; this adds items to the action bar if it is present.
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_maps, menu);
         return super.onCreateOptionsMenu(menu);
@@ -156,22 +195,11 @@ public class MapsActivity extends ActionBarActivity implements
             = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            /*
-             Retrieve the place ID of the selected item from the Adapter.
-             The adapter stores each Place suggestion in a PlaceAutocomplete object from which we
-             read the place ID.
-              */
             final PlaceAutocompleteAdapter.PlaceAutocomplete item = mAdapter.getItem(position);
             final String placeId = String.valueOf(item.placeId);
-
-            /*
-             Issue a request to the Places Geo Data API to retrieve a Place object with additional
-              details about the place.
-              */
             PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi
                     .getPlaceById(mGoogleApiClient, placeId);
             placeResult.setResultCallback(mUpdatePlaceDetailsCallback);
-
             for(Polyline line : polylines)
             {
                 line.remove();
@@ -180,18 +208,12 @@ public class MapsActivity extends ActionBarActivity implements
             if(dLocationMarker != null){
                 dLocationMarker.remove();
             }
-
             mAutocompleteView.setSelection(0);
             mAutocompleteView.setFocusableInTouchMode(false);
             mAutocompleteView.setFocusable(false);
             clearButton.setVisibility(View.VISIBLE);
             InputMethodManager in = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             in.hideSoftInputFromWindow(mAutocompleteView.getApplicationWindowToken(), 0);
-//
-//
-//            Toast.makeText(getApplicationContext(), "Clicked: " + item.description,
-//                    Toast.LENGTH_SHORT).show();
-
         }
     };
 
@@ -200,11 +222,9 @@ public class MapsActivity extends ActionBarActivity implements
         @Override
         public void onResult(PlaceBuffer places) {
             if (!places.getStatus().isSuccess()) {
-                // Request did not complete successfully
                 places.release();
                 return;
             }
-            // Get the Place object from the buffer.
             final Place place = places.get(0);
             LatLng dest = place.getLatLng();
 
@@ -214,7 +234,6 @@ public class MapsActivity extends ActionBarActivity implements
 
             MapsActivity.mainMenu.findItem(R.id.action_done).setVisible(true);
 
-            // Getting URL to the Google Directions API
             String url = getDirectionsUrl(dest);
             DownloadTask downloadTask = new DownloadTask();
             downloadTask.execute(url);
@@ -224,57 +243,32 @@ public class MapsActivity extends ActionBarActivity implements
     };
 
     private String getDirectionsUrl(LatLng dest){
-
-        // Origin of route
         String str_origin = "origin="+sLocation.getLatitude()+","+sLocation.getLongitude();
-
-        // Destination of route
         String str_dest = "destination="+dest.latitude+","+dest.longitude;
-
-        // Sensor enabled
         String sensor = "sensor=false";
-
-        // Building the parameters to the web service
         String parameters = str_origin+"&"+str_dest+"&"+sensor;
-
-        // Output format
         String output = "json";
-
-        // Building the url to the web service
         String url = "https://maps.googleapis.com/maps/api/directions/"+output+"?"+parameters;
-
         return url;
     }
-    /** A method to download json data from url */
+
     private String downloadUrl(String strUrl) throws IOException {
         String data = "";
         InputStream iStream = null;
         HttpURLConnection urlConnection = null;
         try{
             URL url = new URL(strUrl);
-
-            // Creating an http connection to communicate with url
             urlConnection = (HttpURLConnection) url.openConnection();
-
-            // Connecting to url
             urlConnection.connect();
-
-            // Reading data from url
             iStream = urlConnection.getInputStream();
-
             BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
-
             StringBuffer sb = new StringBuffer();
-
             String line = "";
             while( ( line = br.readLine()) != null){
                 sb.append(line);
             }
-
             data = sb.toString();
-
             br.close();
-
         }catch(Exception e){
             Log.d("Exception while downloading url", e.toString());
         }finally{
@@ -284,18 +278,12 @@ public class MapsActivity extends ActionBarActivity implements
         return data;
     }
 
-    // Fetches data from url passed
     private class DownloadTask extends AsyncTask<String, Void, String>{
 
-        // Downloading data in non-ui thread
         @Override
         protected String doInBackground(String... url) {
-
-            // For storing data from web service
             String data = "";
-
             try{
-                // Fetching the data from web service
                 data = downloadUrl(url[0]);
             }catch(Exception e){
                 Log.d("Background Task",e.toString());
@@ -303,14 +291,10 @@ public class MapsActivity extends ActionBarActivity implements
             return data;
         }
 
-        // Executes in UI thread, after the execution of
-        // doInBackground()
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
             ParserTask parserTask = new ParserTask();
-
-            // Invokes the thread for parsing the JSON data
             parserTask.execute(result);
         }
     }
@@ -318,18 +302,18 @@ public class MapsActivity extends ActionBarActivity implements
     /** A class to parse the Google Places in JSON format */
     private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String,String>>> >{
 
-        // Parsing the data in non-ui thread
         @Override
         protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
 
             JSONObject jObject;
             List<List<HashMap<String, String>>> routes = null;
-
             try{
                 jObject = new JSONObject(jsonData[0]);
-                DirectionsJSONParser parser = new DirectionsJSONParser();
+                JSONArray jRoutes = jObject.getJSONArray("routes");
+                JSONObject jroute = ( (JSONObject)jRoutes.get(0)).getJSONObject("overview_polyline");
+                encroute = jroute.getString("points");
 
-                // Starts parsing data
+                DirectionsJSONParser parser = new DirectionsJSONParser();
                 routes = parser.parse(jObject);
             }catch(Exception e){
                 e.printStackTrace();
@@ -375,13 +359,6 @@ public class MapsActivity extends ActionBarActivity implements
 
     @Override
     public void onConnected(Bundle bundle) {
-//        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-//        if(location == null){
-//            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-//        }else{
-//            handleNewLocation(location);
-//        }
-//        sLocation = location;
     }
 
     private void handleNewLocation(Location location) {
@@ -456,6 +433,97 @@ public class MapsActivity extends ActionBarActivity implements
     @Override
     public void onLocationChanged(Location location) {
         handleNewLocation(location);
+    }
+
+    private class MyAsyncTask extends AsyncTask<String, Integer, String>{
+
+        @Override
+        protected String doInBackground(String... params) {
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpPost httppost = new HttpPost("http://whenisdryday.in:5000/subscriber");
+
+            List nameValuedPairs = new ArrayList();
+            nameValuedPairs.add(new BasicNameValuePair("route", params[0]));
+            nameValuedPairs.add(new BasicNameValuePair("key", params[1]));
+            try {
+                // UrlEncodedFormEntity is an entity composed of a list of url-encoded pairs.
+                //This is typically useful while sending an HTTP POST request.
+                UrlEncodedFormEntity urlEncodedFormEntity = new UrlEncodedFormEntity(nameValuedPairs);
+
+                // setEntity() hands the entity (here it is urlEncodedFormEntity) to the request.
+                httppost.setEntity(urlEncodedFormEntity);
+
+                try {
+                    // HttpResponse is an interface just like HttpPost.
+                    //Therefore we can't initialize them
+                    HttpResponse httpResponse = httpclient.execute(httppost);
+
+                    // According to the JAVA API, InputStream constructor do nothing.
+                    //So we can't initialize InputStream although it is not an interface
+                    InputStream inputStream = httpResponse.getEntity().getContent();
+
+                    InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+
+                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+
+                    StringBuilder stringBuilder = new StringBuilder();
+
+                    String bufferedStrChunk = null;
+
+                    while((bufferedStrChunk = bufferedReader.readLine()) != null){
+                        stringBuilder.append(bufferedStrChunk);
+                    }
+
+                    return stringBuilder.toString();
+
+                } catch (ClientProtocolException cpe) {
+                    System.out.println("First Exception caz of HttpResponese :" + cpe);
+                    cpe.printStackTrace();
+                } catch (IOException ioe) {
+                    System.out.println("Second Exception caz of HttpResponse :" + ioe);
+                    ioe.printStackTrace();
+                }
+
+            } catch (UnsupportedEncodingException uee) {
+                System.out.println("An Exception given because of UrlEncodedFormEntity argument :" + uee);
+                uee.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            try {
+                JSONObject jObject = new JSONObject(result);
+                JSONObject dataObject = jObject.getJSONObject("data");
+                listToDisplay = dataObject.getJSONArray("providers");
+                onSuccess();
+            } catch (JSONException e) {
+                Log.e("JSONException", "Error: " + e.toString());
+            }
+        }
+
+    }
+
+    public JSONArray getListData(){
+        return this.listToDisplay;
+    }
+
+    public void addSubscriberToTable(){
+        HashMap<String, String> user = session.getUserDetails();
+        session_id = user.get(SessionManager.KEY_SESSION);
+        new MyAsyncTask().execute(encroute,session_id);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_done:
+                addSubscriberToTable();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
 }
