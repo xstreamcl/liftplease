@@ -54,7 +54,8 @@ get_field = {
 post_field = {
     'status' : fields.String(attribute='status')
     ,'data' : {
-    'key': fields.String(attribute='app_id')
+    'key': fields.String(attribute='app_id'),
+    'phone' : fields.String(attribute='phone'),
     }
     ,'messsage' : fields.String(attribute='messsage')
 
@@ -96,8 +97,10 @@ class User(Resource):
         if bool(lp_user.query.all()) != False:
             try:
                 app_id = lp_user.query.filter_by(device_id=args.device_id,g_id=args.g_id).first().app_id
+                phone = lp_user.query.filter_by(app_id=app_id).first().phone
                 user={}
                 user['app_id'] = app_id
+                user['phone'] = phone
                 user['status'] = 'OK'
                 user['messsage'] = 'Already registered chutiye'
                 print user

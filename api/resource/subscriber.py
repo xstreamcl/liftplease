@@ -113,9 +113,11 @@ post_field = {
 
 
 post_field_request = {
-    'status' : fields.String(attribute='status'),
-    'data' : fields.String(attribute='status'),
-    'message' : fields.String(attribute='message'),
+    'status' : fields.String(attribute='status')
+    ,'data' : {
+        'data' : fields.String(attribute='status')
+    }
+    ,'message' : fields.String(attribute='message')
 }
 
 request_status = {
@@ -189,13 +191,10 @@ class Subscriber(Resource):
 class SubscriberRefresh(Resource):
     @marshal_with(get_refresh_field)
     def get(self):
-        print "GET START1"
         args = post_parser.parse_args()
         # find the distance
         listpros = collections.defaultdict(list)
-        print "GET start2"
         for pros, user in db.session.query(lp_provider, lp_user).join(lp_user, lp_provider.lp_uid == lp_user.lp_uid).all():
-            print "inside FOR"
             prosd = pros._asdict()
             userd = user._asdict()
             # there has to be a better way to do this!
@@ -236,13 +235,17 @@ class SubscriberRequest(Resource):
 
     @marshal_with(post_field_request)
     def post(self):
+        print "start subs req post"
         args = get_request_status.parse_args()
         rval = collections.defaultdict(dict)
         rval['status'] = 'error'
         rval['data'] = 'NA'
         rval['message'] = 'message'
         print args
-        next_id = lp_match.query.order_by(lp_match.matchid.desc()).first().matchid + 1
+        if bool(lp_match.query.all()) != False:
+            next_id = lp_match.query.order_by(lp_match.matchid.desc()).first().matchid + 1
+        else:
+            next_id=1
         user = db.session.query(lp_user).filter_by(app_id = args.app_id).first()
         pquery = db.session.query(lp_provider).filter_by(lp_uid = args.pid).first()
         if user == None or pquery == None:
@@ -253,7 +256,7 @@ class SubscriberRequest(Resource):
             return rval
         sroute = subs._asdict()['encroute']
         proute = pquery._asdict()['encroute']
-        db.session.add(lp_match(next_id, args.pid, sid, proute, sroute, 'False'))
+        db.session.add(lp_match(next_id, args.pid, sid, proute, sroute,0))
         db.session.commit()
         rval['status'] = 'ok'
         return rval
@@ -265,7 +268,7 @@ class SubscriberRequestStatus(Resource):
         args = get_request_status.parse_args()
         rval = collections.defaultdict(dict)
         rval['status'] = 'ok'
-        rval['data']['statusinner'] = 'False'
+        rval['data']['statusinner'] = 0
         rval['message'] = 'message'
         sid = db.session.query(lp_user).filter_by(app_id = args.app_id).first()
         if sid == None:

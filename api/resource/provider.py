@@ -32,7 +32,7 @@ get_refresh_parser.add_argument( 'route', dest='encroute', type=str, required=Tr
 
 ## post arguments for provider request class 
 post_request_parser.add_argument( 'key', dest='app_id', type=str, required=True, help='App id of user making request') 
-post_request_parser.add_argument( 'id', dest='lp_uid', type=int, required=True, help='lp_uid of the subscriber, the user wants to offer lift')
+post_request_parser.add_argument( 'subscriber', dest='lp_uid', type=int, required=True, help='lp_uid of the subscriber, the user wants to offer lift')
 
 # Response fields for provider class
 
