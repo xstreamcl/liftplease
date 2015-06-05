@@ -111,7 +111,7 @@ public class SubListActivity extends ActionBarActivity {
         {
             try {
                 JSONObject object = listArray.getJSONObject(i);
-                int waiting_since = (int) Double.parseDouble(object.getString("waiting_since"));
+                int waiting_since = 120 - (int) Double.parseDouble(object.getString("waiting_since"));
                 mItems.add(new ListViewItem(object.getString("image"), object.getString("name"), object.getString("org_title"), object.getString("org_name"), waiting_since, object.getString("subscriber_route"), object.getString("id")));
             } catch (JSONException e) {
                 e.printStackTrace();

@@ -390,6 +390,7 @@ public class RequestLiftActivity extends ActionBarActivity{
             try {
                 JSONObject jObject = new JSONObject(result);
                 Intent intent = new Intent(getApplicationContext(), SubscriberWaitingActivity.class);
+                intent.putExtra("providerId", providerId);
                 startActivity(intent);
             } catch (JSONException e) {
                 Log.e("JSONException", "Error: " + e.toString());
