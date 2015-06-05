@@ -17,6 +17,7 @@ user_field = {
     'g_id': fields.String(attribute='g_id'),
     'app_id': fields.String(attribute='app_id'),
     'name': fields.String(attribute='display_name'),
+    'phone' :fields.String(attribute='phone'),
     'gender': fields.String(attribute='gender'),
     'email': fields.String(attribute='email'),
     'image_uri': fields.String(attribute='image_url'),

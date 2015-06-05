@@ -2,6 +2,7 @@ from flask_restful import fields, marshal_with, reqparse, Resource, inputs
 from db import db, lp_user, lp_provider, lp_subscriber
 import uuid
 import sys
+import collections
 
 # !the final call on abstracting this and including it into a configuration file has to be made, so the code looks cleaner!
 
@@ -16,6 +17,7 @@ get_parser = parser.copy()
 post_parser = parser.copy()
 post_cancel_parser = parser.copy()
 get_cancel_parser = parser.copy()
+post_phone_parser = parser.copy()
 
 ## get for User Class
 get_parser.add_argument( 'key', dest='app_id', type=str, required=True, help='Application id' )
@@ -33,9 +35,12 @@ post_parser.add_argument( 'about', dest='about_me', type=str, required=False )
 post_parser.add_argument( 'org_name', dest='org_name', type=str, required=False )
 post_parser.add_argument( 'org_title', dest='org_title', type=str, required=False )
 
-## post for User Trip Cancel
+## post request for User Trip Cancel
 post_cancel_parser.add_argument('key', dest='app_id', type=str, required=True, help='Application id' )
 
+## post phone for user 
+post_phone_parser.add_argument( 'key', dest='app_id', type=str, required=True, help='Application id' )
+post_phone_parser.add_argument( 'phone', dest='phone', type=str, required=True, help='User phone number')
 
 # Response fields
 
@@ -68,6 +73,16 @@ cancel_post_field = {
     'messsage' : fields.String(attribute='messsage'),
 }
 
+# update phone response
+phone_status = {
+    'status': fields.String(attribute='statusinner'),
+}
+
+post_phone_field = {
+    'status' : fields.String(attribute='status'),
+    'data' : fields.Nested(phone_status),
+    'message' : fields.String(attribute='message'),
+}
 
 # Resource classes
 
@@ -136,6 +151,29 @@ class Cancel_Trip(Resource):
     def post(self):
         args = post_cancel_parser.parse_args()
         lp_uid = lp_user.query.filter_by(app_id=args.app_id).first().lp_uid
-        
 
+class UpdatePhone(Resource):
+    """Update Phone number of a user"""
+    def get(self):
+        pass
+
+    @marshal_with(post_phone_field)
+    def post(self):
+        args = post_phone_parser.parse_args()
+        post_reply = collections.defaultdict(dict)
+        try:
+            if lp_user.query.filter_by(app_id=args.app_id).update({'phone':args.phone})!=0:
+                db.session.commit() #doubt if I should do this?
+                post_reply['status'] = 'OK'
+                post_reply['message'] = 'phone number updated'
+                post_reply['data']['statusinner'] = 'null'
+            else:
+                post_reply['status'] = 'Failed'
+                post_reply['message'] = 'phone number could not be updated'
+                post_reply['data']['statusinner'] = 'null'
+        except:
+            post_reply['status'] = 'Error'
+            post_reply['message'] = 'some exception'
+            post_reply['data']['statusinner'] = 'null'
+        return post_reply
 
