@@ -47,6 +47,41 @@ get_field = {
     'eta': fields.String(attribute='trip_creation_time'),
 }
 
+# SubscriberRefresh GET response 
+
+get_refresh_geo = {
+    'lat': fields.String(attribute='lat'),
+    'lon': fields.String(attribute='lng'),
+}
+
+get_refresh_subfield = {
+    'id': fields.Integer(attribute='lp_uid'),
+    'name': fields.String(attribute='display_name'),
+    'org_title' : fields.String(attribute='org_title'),
+    'org_name' : fields.String(attribute='org_name'),
+    'trip_elapsed_time' : fields.String(attribute='trip_elapsed_time'),
+    'trip_creation_time': fields.String(attribute='trip_creation_time'),
+    'image': fields.String(attribute='image_url'),
+    'distance': fields.String(attribute='distance'),
+    'provider_route' : fields.String(attribute='route'),
+    'start': fields.Nested(get_refresh_geo),
+    'stop': fields.Nested(get_refresh_geo),
+}
+
+get_refresh_data = {
+    'providers': fields.List(fields.Nested(get_refresh_subfield))
+}
+
+get_refresh_field = {
+    'status' : fields.String(attribute='status'),
+    'data' : get_refresh_data,
+    'message' : fields.String(attribute='message'),
+}
+
+
+# Subscriber POST response 
+
+
 post_geo = {
     'lat': fields.String(attribute='lat'),
     'lon': fields.String(attribute='lng'),
@@ -152,12 +187,15 @@ class Subscriber(Resource):
         return listpros
 
 class SubscriberRefresh(Resource):
-    @marshal_with(get_field)
+    @marshal_with(get_refresh_field)
     def get(self):
+        print "GET START1"
         args = post_parser.parse_args()
         # find the distance
         listpros = collections.defaultdict(list)
+        print "GET start2"
         for pros, user in db.session.query(lp_provider, lp_user).join(lp_user, lp_provider.lp_uid == lp_user.lp_uid).all():
+            print "inside FOR"
             prosd = pros._asdict()
             userd = user._asdict()
             # there has to be a better way to do this!

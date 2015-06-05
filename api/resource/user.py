@@ -34,7 +34,7 @@ post_parser.add_argument( 'org_name', dest='org_name', type=str, required=False 
 post_parser.add_argument( 'org_title', dest='org_title', type=str, required=False )
 
 ## post for User Trip Cancel
-post_cancel_parser.add_argument('key'dest='app_id', type=str, required=True, help='Application id' )
+post_cancel_parser.add_argument('key', dest='app_id', type=str, required=True, help='Application id' )
 
 
 # Response fields
