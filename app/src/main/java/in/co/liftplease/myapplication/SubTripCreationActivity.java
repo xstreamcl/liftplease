@@ -382,7 +382,7 @@ public class SubTripCreationActivity extends ActionBarActivity implements
 
     public void addSubscriberToTable(){
         Intent intent = new Intent(this, ProvListActivity.class);
-        intent.putExtra("route", route);
+        session.addKey("route",route);
         startActivity(intent);
     }
 

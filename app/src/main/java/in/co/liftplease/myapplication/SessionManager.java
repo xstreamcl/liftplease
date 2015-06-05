@@ -41,6 +41,8 @@ public class SessionManager {
     public static final String KEY_SESSION = "session_id";
 
     public static final String KEY_STATUS = "user_status";
+
+    public static final String KEY_ROUTE = "route";
     // Constructor
     public SessionManager(Context context){
         this._context = context;
@@ -52,27 +54,20 @@ public class SessionManager {
      * Create login session
      * */
     public void createLoginSession(String name, String email,String image_uri, String key, String status){
-        // Storing login value as TRUE
         editor.putBoolean(IS_LOGIN, true);
-
-        // Storing name in pref
         editor.putString(KEY_NAME, name);
-
-        // Storing email in pref
         editor.putString(KEY_EMAIL, email);
-
-        // Storing name in pref
         editor.putString(KEY_IMAGE, image_uri);
-
-        // Storing email in pref
         editor.putString(KEY_SESSION, key);
-
         editor.putString(KEY_STATUS, status);
-
-        // commit changes
         editor.commit();
     }
 
+
+    public void addKey(String key, String value){
+        editor.putString(key, value);
+        editor.commit();
+    }
     /**
      * Check login method wil check user login status
      * If false it will redirect user to login page
@@ -107,6 +102,7 @@ public class SessionManager {
         user.put(KEY_IMAGE, pref.getString(KEY_IMAGE, null));
         user.put(KEY_SESSION, pref.getString(KEY_SESSION, null));
         user.put(KEY_STATUS, pref.getString(KEY_STATUS, null));
+        user.put(KEY_ROUTE, pref.getString(KEY_ROUTE, null));
         return user;
     }
 

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="in.co.liftplease.myapplication" >
+    package="in.co.liftplease.myapplication"
+    android:installLocation="preferExternal" >
 
     <uses-sdk android:minSdkVersion="17" />
 
@@ -75,6 +76,18 @@
         <activity
             android:name=".ProvListActivity"
             android:label="@string/title_activity_prov_list" >
+        </activity>
+        <activity
+            android:name=".RequestLiftActivity"
+            android:label="@string/title_activity_request_lift" >
+        </activity>
+        <activity
+            android:name=".ViewLiftRequestActivity"
+            android:label="@string/title_activity_view_lift_request" >
+        </activity>
+        <activity
+            android:name=".SubscriberWaitingActivity"
+            android:label="Waiting for response.." >
         </activity>
     </application>
 

@@ -45,5 +45,8 @@
     <string name="title_activity_prov_trip_creation">Create a lift offer</string>
     <string name="title_activity_sub_list">Select a left seeker</string>
     <string name="title_activity_prov_list">Select a lift provider</string>
+    <string name="title_activity_request_lift">RequestLiftActivity</string>
+    <string name="title_activity_view_lift_request">ViewLiftRequestActivity</string>
+    <string name="title_activity_subscriber_waiting">SubscriberWaitingActivity</string>
 
 </resources>

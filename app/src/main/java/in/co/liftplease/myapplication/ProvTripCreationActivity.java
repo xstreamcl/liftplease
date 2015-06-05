@@ -380,9 +380,9 @@ public class ProvTripCreationActivity extends ActionBarActivity implements
         handleNewLocation(location);
     }
 
-    public void addSubscriberToTable(){
+    public void addProviderToTable(){
         Intent intent = new Intent(this, SubListActivity.class);
-        intent.putExtra("route", route);
+        session.addKey("route",route);
         startActivity(intent);
     }
 
@@ -390,7 +390,7 @@ public class ProvTripCreationActivity extends ActionBarActivity implements
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_done:
-                addSubscriberToTable();
+                addProviderToTable();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

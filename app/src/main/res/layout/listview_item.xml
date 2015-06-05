@@ -43,9 +43,29 @@
 
         <TextView android:id="@+id/time_elapsed"
             android:layout_alignParentRight="true"
+            android:layout_gravity="center_vertical"
+            android:gravity="center_vertical"
+            android:textColor="@android:color/holo_red_dark"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:textAppearance="@android:style/TextAppearance.Small" />
+
+        <TextView android:id="@+id/route"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
+
+        <TextView android:id="@+id/stop"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
+
+        <TextView android:id="@+id/start"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
+
+        <TextView android:id="@+id/id"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
 
     </RelativeLayout>
 

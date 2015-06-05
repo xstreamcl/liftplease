@@ -181,15 +181,15 @@ public class LoginActivity extends Activity implements
         if (Plus.AccountApi.getAccountName(mGoogleApiClient) != null) {
             email = Plus.AccountApi.getAccountName(mGoogleApiClient);
         }
-        if(!email.endsWith("@flipkart.com")){
-            Plus.AccountApi.clearDefaultAccount(mGoogleApiClient);
-            mGoogleApiClient.disconnect();
-            signInButton.setVisibility(View.VISIBLE);
-            signInText.setVisibility(View.VISIBLE);
-            spinner.setVisibility(View.GONE);
-            Toast.makeText(this, "Access restricted to Flipkart employees only", Toast.LENGTH_LONG).show();
-            return;
-        }
+//        if(!email.endsWith("@flipkart.com")){
+//            Plus.AccountApi.clearDefaultAccount(mGoogleApiClient);
+//            mGoogleApiClient.disconnect();
+//            signInButton.setVisibility(View.VISIBLE);
+//            signInText.setVisibility(View.VISIBLE);
+//            spinner.setVisibility(View.GONE);
+//            Toast.makeText(this, "Access restricted to Flipkart employees only", Toast.LENGTH_LONG).show();
+//            return;
+//        }
         TelephonyManager tManager = (TelephonyManager)this.getSystemService(Context.TELEPHONY_SERVICE);
         device_id = tManager.getDeviceId();
         if (Plus.PeopleApi.getCurrentPerson(mGoogleApiClient) != null) {
