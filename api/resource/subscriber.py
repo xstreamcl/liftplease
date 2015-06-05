@@ -57,6 +57,7 @@ get_refresh_geo = {
 get_refresh_subfield = {
     'id': fields.Integer(attribute='lp_uid'),
     'name': fields.String(attribute='display_name'),
+    'phone' : fields.String(attribute='phone')
     'org_title' : fields.String(attribute='org_title'),
     'org_name' : fields.String(attribute='org_name'),
     'trip_elapsed_time' : fields.String(attribute='trip_elapsed_time'),
@@ -256,7 +257,8 @@ class SubscriberRequest(Resource):
             return rval
         sroute = subs._asdict()['encroute']
         proute = pquery._asdict()['encroute']
-        db.session.add(lp_match(next_id, args.pid, sid, proute, sroute,0))
+        s_req_time = time.time()
+        db.session.add(lp_match(next_id, args.pid, sid, proute, sroute, s_req_time, 0))
         db.session.commit()
         rval['status'] = 'ok'
         return rval

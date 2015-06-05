@@ -46,6 +46,7 @@ match_field = {
     'subscriber_id' : fields.Integer(attribute='s_lp_uid'),
     'prov_routeid': fields.String(attribute='p_routeid'),
     'subsc_routeid': fields.String(attribute='s_routeid'),
+    'subsc_req_time' : fields.String(attribute='s_req_time'),
     'match status': fields.String(attribute='status'),
 }
 

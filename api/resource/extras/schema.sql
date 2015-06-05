@@ -40,6 +40,7 @@ create table lp_match (\
     s_lp_uid integer not null,\
     p_routeid text,\
     s_routeid text,\
+    s_req_time text,\
     status integer not null)
 ;
 

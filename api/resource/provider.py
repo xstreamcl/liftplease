@@ -60,10 +60,11 @@ post_field = {
 get_refresh_subfield = {
     'id': fields.Integer(attribute='lp_uid'),
     'name': fields.String(attribute='display_name'),
+    'phone' : fields.String(attribute='phone')
     'org_title' : fields.String(attribute='org_title'),
     'org_name' : fields.String(attribute='org_name'),
     'waiting_since' : fields.String(attribute='waiting_since'),
-    'trip_creation_time': fields.String(attribute='trip_creation_time'),
+    'req_creation_time': fields.String(attribute='req_creation_time'),
     'image': fields.String(attribute='image_url'),
     'subscriber_route' : fields.String(attribute='route'),
 }
@@ -142,33 +143,36 @@ class Provider_Refresh(Resource):
         print "provider unique lp id" ,p_lp_uid
         listsubs = collections.defaultdict(list)
         print "before try"
-        try:
-            print "insdie try"
-            for subs, match, user in db.session.query(lp_subscriber, lp_match, lp_user).join(lp_match, lp_subscriber.lp_uid == lp_match.s_lp_uid).filter_by(p_lp_uid=p_lp_uid,status=0).join(lp_user, lp_subscriber.lp_uid == lp_user.lp_uid).all():
-                print "inside for"
-                subsd = subs._asdict()
-                userd = user._asdict()
-                print "subscriber", subsd
-                print "user info", userd
-                temp = collections.defaultdict(list)
-                temp['lp_uid'] = userd['lp_uid']
-                temp['org_title'] = userd['org_title']
-                temp['org_name'] = userd['org_name']
-                temp['route'] = subsd['encroute']
-                temp['trip_creation_time'] = subsd['trip_creation_time']
-                temp['waiting_since'] = time.time()-float(subsd['trip_creation_time'])
-                print "waiting_since since trip", temp['waiting_since']
-                temp['display_name'] = userd['display_name']
-                temp['image_url'] = userd['image_url']
-                listsubs['subscribers'].append(temp)
-                listsubs['status'] = 'OK'
-                listsubs['message'] = 'list of subscribers'
-                print "join output in for", listsubs
-        except:
-            print "inside except"
-            listsubs['subscribers']='None'
-            listsubs['status'] = 'Failed'
-            listsubs['message'] = 'gotta catch the exception'
+#        try:
+        print "insdie try"
+        for subs, match, user in db.session.query(lp_subscriber, lp_match, lp_user).join(lp_match, lp_subscriber.lp_uid == lp_match.s_lp_uid).filter_by(p_lp_uid=p_lp_uid,status=0).join(lp_user, lp_subscriber.lp_uid == lp_user.lp_uid).all():
+            print "inside for"
+            subsd = subs._asdict()
+            matchd = match._asdict()
+            userd = user._asdict()
+#            print "subscriber", subsd
+ #           print "user info", userd
+            print "\n from match \n", matchd
+            print "\n request creation time", matchd['s_req_time']
+            temp = collections.defaultdict(list)
+            temp['lp_uid'] = userd['lp_uid']
+            temp['org_title'] = userd['org_title']
+            temp['org_name'] = userd['org_name']
+            temp['route'] = subsd['encroute']
+            temp['req_creation_time'] = matchd['s_req_time']
+            temp['waiting_since'] = time.time()-float(matchd['s_req_time'])
+            print "waiting_since since trip", temp['waiting_since']
+            temp['display_name'] = userd['display_name']
+            temp['image_url'] = userd['image_url']
+            listsubs['subscribers'].append(temp)
+            listsubs['status'] = 'OK'
+            listsubs['message'] = 'list of subscribers'
+            print "join output in for", listsubs
+ #       except:
+  #          print "inside except"
+   #         listsubs['subscribers']='None'
+    #        listsubs['status'] = 'Failed'
+     #       listsubs['message'] = 'gotta catch the exception'
         if len(listsubs)!=0:
             return listsubs
         else:

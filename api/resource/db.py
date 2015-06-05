@@ -75,14 +75,16 @@ class lp_match(db.Model, DictSerializable):
     s_lp_uid = db.Column(db.Integer)
     p_routeid = db.Column(db.Text)
     s_routeid = db.Column(db.Text)
+    s_req_time = db.Column(db.Text)
     status = db.Column(db.Integer)
 
-    def __init__(self, matchid, p_lp_uid, s_lp_uid, p_routeid, s_routeid, status):
+    def __init__(self, matchid, p_lp_uid, s_lp_uid, p_routeid, s_routeid, s_req_time, status):
         self.matchid = matchid
         self.p_lp_uid = p_lp_uid
         self.s_lp_uid = s_lp_uid
         self.p_routeid = p_routeid
         self.s_routeid = s_routeid
+        self.s_req_time = s_req_time
         self.status = status
 
 
