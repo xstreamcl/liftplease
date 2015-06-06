@@ -73,7 +73,7 @@ public class SubListActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_prov_list);
+        setContentView(R.layout.activity_sub_list);
         listView = (ListView) findViewById(android.R.id.list);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
                 @Override

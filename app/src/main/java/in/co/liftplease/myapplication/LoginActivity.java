@@ -65,7 +65,6 @@ public class LoginActivity extends Activity implements
     String org_name = null;
     String org_title = null;
     String device_id = null;
-    String phone_number= null;
 
     /* Request code used to invoke sign in user interactions. */
     private static final int RC_SIGN_IN = 0;
@@ -170,8 +169,13 @@ public class LoginActivity extends Activity implements
         mSignInClicked = false;
         HashMap<String, String> user = session.getUserDetails();
         String sessin_id = user.get(SessionManager.KEY_SESSION);
+        String phone_number = user.get(SessionManager.KEY_PHONE);
         if(sessin_id != null){
-            proceed();
+            if(phone_number ==null || phone_number.equals("null") || phone_number.equals("")){
+                showPhoneNumberScreen(user.get(SessionManager.KEY_NAME), user.get(SessionManager.KEY_EMAIL),user.get(SessionManager.KEY_IMAGE),user.get(SessionManager.KEY_SESSION),user.get(SessionManager.KEY_STATUS));
+            }else{
+                proceed();
+            }
         }else{
             Plus.PeopleApi.loadVisible(mGoogleApiClient, null).setResultCallback(this);
         }
@@ -285,7 +289,8 @@ public class LoginActivity extends Activity implements
                 JSONObject dataObject = jObject.getJSONObject("data");
                 String key = dataObject.getString("key");
                 String phone = dataObject.getString("phone");
-                if(phone == "null" || phone == "" || phone == null){
+                if(phone.equals("null") || phone.equals("") || phone == null){
+                    session.createLoginSession(name,email,image_uri,key,"0",phone);
                     showPhoneNumberScreen(name,email,image_uri,key,"0");
                 }else{
                     session.createLoginSession(name,email,image_uri,key,"0",phone);

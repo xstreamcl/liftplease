@@ -42,6 +42,7 @@ public class UpdatePhone extends ActionBarActivity {
     SessionManager session;
     EditText phoneNumber;
     String phone;
+    String session_id;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +67,8 @@ public class UpdatePhone extends ActionBarActivity {
     public void updatePhoneNumber(View view){
         phone = phoneNumber.getText().toString();
         HashMap<String, String> user = session.getUserDetails();
-        new MyAsyncTask().execute(user.get(SessionManager.KEY_SESSION), phone);
+        session_id = user.get(SessionManager.KEY_SESSION);
+        new MyAsyncTask().execute(session_id, phone);
     }
 
 
