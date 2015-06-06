@@ -170,7 +170,7 @@ class UpdatePhone(Resource):
         print "\n phone \n", args.phone
         print "\n key - appdi\n", args.app_id
         if lp_user.query.filter_by(app_id=args.app_id).update({'phone':args.phone})!=0:
-            #db.session.commit() #doubt if I should do this?
+            db.session.commit() #doubt if I should do this?
             post_reply['status'] = 'OK'
             post_reply['message'] = 'phone number updated'
             post_reply['data']['statusinner'] = 'null'

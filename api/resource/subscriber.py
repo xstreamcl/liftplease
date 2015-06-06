@@ -156,36 +156,43 @@ class Subscriber(Resource):
         args = post_parser.parse_args()
         routeid = str(uuid.uuid4())
         trip_creation_time = time.time()
-        lp_uid = lp_user.query.with_entities(lp_user.lp_uid).filter_by(app_id=args.app_id).first()
-        db.session.add(lp_subscriber(lp_uid[0], trip_creation_time, routeid, args.encroute))
+        lp_uid = lp_user.query.with_entities(lp_user.lp_uid).filter_by(app_id=args.app_id).first().lp_uid
+        print "\n all values \n", args.encroute, trip_creation_time, routeid, lp_uid
+        if db.session.query(lp_subscriber).filter_by(lp_uid=lp_uid).update({"trip_creation_time":trip_creation_time,"routeid":routeid,"encroute":args.encroute})!=0:
+        #db.session.add(lp_subscriber(lp_uid[0], trip_creation_time, routeid, args.encroute))
+            db.session.commit()
         # find the distance
-        listpros = collections.defaultdict(list)
-        for pros, user in db.session.query(lp_provider, lp_user).join(lp_user, lp_provider.lp_uid == lp_user.lp_uid).all():
-            prosd = pros._asdict()
-            userd = user._asdict()
-            # there has to be a better way to do this!
+            listpros = collections.defaultdict(list)
+            for pros, user in db.session.query(lp_provider, lp_user).join(lp_user, lp_provider.lp_uid == lp_user.lp_uid).all():
+                prosd = pros._asdict()
+                userd = user._asdict()
+                # there has to be a better way to do this!
+                temp = collections.defaultdict(list)
+                points = gpc().decode(args.encroute)
+                point = points[-1]
+                temp['lp_uid'] = userd['lp_uid']
+                temp['org_title'] = userd['org_title']
+                temp['org_name'] = userd['org_name']
+                temp['route'] = prosd['encroute']
+                temp['trip_creation_time'] = prosd['trip_creation_time']
+                temp['trip_elapsed_time'] = time.time()-float(prosd['trip_creation_time'])
+                print "trip_elapsed_time since trip", temp['trip_elapsed_time']
+                temp['display_name'] = userd['display_name']
+                temp['image_url'] = userd['image_url']
+                temp['distance'] = calculate_min_dist(prosd['encroute'], point)
+                pointc = collections.defaultdict(dict)
+                (pointc['lat'], pointc['lng']) = points[0]
+                temp['start'] = pointc
+                (pointc['lat'], pointc['lng']) = points[-1]
+                temp['stop'] = pointc
+                listpros['providers'].append(temp)
+                listpros['status'] = 'OK'
+                listpros['message'] = 'some message'
+        else:
+            listpros['status'] = 'Failed'
+            listpros['message'] = 'subscriber could not be added'
             temp = collections.defaultdict(list)
-            points = gpc().decode(args.encroute)
-            point = points[-1]
-            temp['lp_uid'] = userd['lp_uid']
-            temp['org_title'] = userd['org_title']
-            temp['org_name'] = userd['org_name']
-            temp['route'] = prosd['encroute']
-            temp['trip_creation_time'] = prosd['trip_creation_time']
-            temp['trip_elapsed_time'] = time.time()-float(prosd['trip_creation_time'])
-            print "trip_elapsed_time since trip", temp['trip_elapsed_time']
-            temp['display_name'] = userd['display_name']
-            temp['image_url'] = userd['image_url']
-            temp['distance'] = calculate_min_dist(prosd['encroute'], point)
-            pointc = collections.defaultdict(dict)
-            (pointc['lat'], pointc['lng']) = points[0]
-            temp['start'] = pointc
-            (pointc['lat'], pointc['lng']) = points[-1]
-            temp['stop'] = pointc
             listpros['providers'].append(temp)
-            listpros['status'] = 'OK'
-            listpros['message'] = 'some message'
-        db.session.commit()
         print listpros
         return listpros
 
