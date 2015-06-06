@@ -59,6 +59,7 @@ public class SubListActivity extends ActionBarActivity {
     String userProfileImage;
     private Handler mHandler;
     private boolean mCountersActive;
+    private TextView timerBox;
     private ArrayList<ListViewItem> mItems = new ArrayList<ListViewItem>();
     private ArrayAdapter<ListViewItem> mListAdapter;
     private JSONArray listToDisplay;
@@ -74,6 +75,7 @@ public class SubListActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sub_list);
+        timerBox = (TextView)findViewById(R.id.timer);
         listView = (ListView) findViewById(android.R.id.list);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
                 @Override
@@ -90,7 +92,6 @@ public class SubListActivity extends ActionBarActivity {
                     intent.putExtra("id", ((ListViewItem) o).id);
                     intent.putExtra("phone", ((ListViewItem) o).phone);
                     startActivity(intent);
-                    Toast.makeText(getApplicationContext(), "You have chosen the pen: " + " " + pen, Toast.LENGTH_LONG).show();
                 }
             }
         );
@@ -153,6 +154,13 @@ public class SubListActivity extends ActionBarActivity {
                     }
                     // notify that data has been changed
                     mListAdapter.notifyDataSetChanged();
+                }
+                Integer timer = Integer.valueOf(timerBox.getText().toString());
+                if(timer > 0){
+                    timer--;
+                    timerBox.setText(Integer.toString(timer));
+                }else{
+                    Toast.makeText(getApplicationContext(), "Your offer is now expired.", Toast.LENGTH_LONG).show();
                 }
                 // update every second
                 mHandler.postDelayed(this, 1000);
@@ -468,6 +476,7 @@ public class SubListActivity extends ActionBarActivity {
 
         @Override
         protected void onPostExecute(String result) {
+            String result1 = result;
             try {
                 JSONObject jObject = new JSONObject(result);
                 JSONObject dataObject = jObject.getJSONObject("data");
