@@ -73,6 +73,7 @@ public class RequestLiftActivity extends ActionBarActivity{
     private ImageButton clearButton;
     private List<Polyline> polylines = new ArrayList<Polyline>();
     private String route;
+    private String phone;
     private Marker subSourceMarker;
     private String providerId;
     private Marker subDestMarker;
@@ -82,6 +83,7 @@ public class RequestLiftActivity extends ActionBarActivity{
     String session_id;
     String provider_route;
     String user_route;
+    String name;
 
 
     public static final String TAG = MapsActivity.class.getSimpleName();
@@ -99,6 +101,7 @@ public class RequestLiftActivity extends ActionBarActivity{
 
         getDataFromIntent();
         getDataFromSession();
+        setTitle(name);
 
     }
 
@@ -144,15 +147,10 @@ public class RequestLiftActivity extends ActionBarActivity{
 
     public void getDataFromIntent(){
         Intent intent = getIntent();
-        String provider_name = intent.getStringExtra("name");
-        String provider_image_uri = intent.getStringExtra("image_uri");
+        name = intent.getStringExtra("name");
         provider_route = intent.getStringExtra("route");
-        String provider_org_name = intent.getStringExtra("org_name");
-        String provider_org_title = intent.getStringExtra("org_title");
-        String stop = intent.getStringExtra("stop");
-        String start = intent.getStringExtra("start");
         providerId = intent.getStringExtra("id");
-        setTitle(provider_name);
+        phone = intent.getStringExtra("phone");
     }
 
     public void showRoute(){
@@ -391,6 +389,7 @@ public class RequestLiftActivity extends ActionBarActivity{
                 JSONObject jObject = new JSONObject(result);
                 Intent intent = new Intent(getApplicationContext(), SubscriberWaitingActivity.class);
                 intent.putExtra("providerId", providerId);
+                intent.putExtra("phone", phone);
                 startActivity(intent);
             } catch (JSONException e) {
                 Log.e("JSONException", "Error: " + e.toString());

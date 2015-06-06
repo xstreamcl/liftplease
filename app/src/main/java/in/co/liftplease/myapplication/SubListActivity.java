@@ -88,6 +88,7 @@ public class SubListActivity extends ActionBarActivity {
                     intent.putExtra("org_title", ((ListViewItem) o).org_title);
                     intent.putExtra("route", ((ListViewItem) o).route);
                     intent.putExtra("id", ((ListViewItem) o).id);
+                    intent.putExtra("phone", ((ListViewItem) o).phone);
                     startActivity(intent);
                     Toast.makeText(getApplicationContext(), "You have chosen the pen: " + " " + pen, Toast.LENGTH_LONG).show();
                 }
@@ -112,7 +113,9 @@ public class SubListActivity extends ActionBarActivity {
             try {
                 JSONObject object = listArray.getJSONObject(i);
                 int waiting_since = 120 - (int) Double.parseDouble(object.getString("waiting_since"));
-                mItems.add(new ListViewItem(object.getString("image"), object.getString("name"), object.getString("org_title"), object.getString("org_name"), waiting_since, object.getString("subscriber_route"), object.getString("id")));
+                if(waiting_since > 0){
+                    mItems.add(new ListViewItem(object.getString("image"), object.getString("name"), object.getString("org_title"), object.getString("org_name"), waiting_since, object.getString("subscriber_route"), object.getString("id"), object.getString("phone")));
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -170,7 +173,8 @@ public class SubListActivity extends ActionBarActivity {
         private int waiting_since;
         public final String route;
         public final String id;
-        public ListViewItem(String image_uri, String name, String org_title, String org_name, int waiting_since, String route, String id) {
+        public final String phone;
+        public ListViewItem(String image_uri, String name, String org_title, String org_name, int waiting_since, String route, String id, String phone) {
             this.image_uri = image_uri;
             this.name = name;
             this.org_title = org_title;
@@ -178,6 +182,7 @@ public class SubListActivity extends ActionBarActivity {
             this.waiting_since = waiting_since;
             this.route = route;
             this.id = id;
+            this.phone = phone;
         }
         public String getName() {
             return name;
@@ -316,6 +321,7 @@ public class SubListActivity extends ActionBarActivity {
                 viewHolder.route = (TextView) convertView.findViewById(R.id.route);
                 viewHolder.stop = (TextView) convertView.findViewById(R.id.stop);
                 viewHolder.start = (TextView) convertView.findViewById(R.id.start);
+                viewHolder.phone = (TextView) convertView.findViewById(R.id.phone);
                 convertView.setTag(viewHolder);
             } else {
                 // recycle the already inflated view
@@ -343,6 +349,7 @@ public class SubListActivity extends ActionBarActivity {
             TextView route;
             TextView stop;
             TextView start;
+            TextView phone;
         }
 
         public class ImageDownloaderTask extends AsyncTask<String, Void, Bitmap> {

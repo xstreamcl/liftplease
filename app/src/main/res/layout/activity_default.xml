@@ -68,7 +68,7 @@
             android:textSize="22sp"
             android:gravity="bottom"
             android:layout_weight="50"
-            android:text="Feeling Helpful?" />
+            android:text="Feeling helpful?" />
 
         <mehdi.sakout.fancybuttons.FancyButton
             android:layout_width="wrap_content"

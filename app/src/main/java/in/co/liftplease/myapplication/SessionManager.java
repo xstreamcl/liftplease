@@ -43,6 +43,8 @@ public class SessionManager {
     public static final String KEY_STATUS = "user_status";
 
     public static final String KEY_ROUTE = "route";
+
+    public static final String KEY_PHONE = "phone";
     // Constructor
     public SessionManager(Context context){
         this._context = context;
@@ -53,13 +55,14 @@ public class SessionManager {
     /**
      * Create login session
      * */
-    public void createLoginSession(String name, String email,String image_uri, String key, String status){
+    public void createLoginSession(String name, String email,String image_uri, String key, String status, String phone){
         editor.putBoolean(IS_LOGIN, true);
         editor.putString(KEY_NAME, name);
         editor.putString(KEY_EMAIL, email);
         editor.putString(KEY_IMAGE, image_uri);
         editor.putString(KEY_SESSION, key);
         editor.putString(KEY_STATUS, status);
+        editor.putString(KEY_PHONE, phone);
         editor.commit();
     }
 
@@ -103,6 +106,7 @@ public class SessionManager {
         user.put(KEY_SESSION, pref.getString(KEY_SESSION, null));
         user.put(KEY_STATUS, pref.getString(KEY_STATUS, null));
         user.put(KEY_ROUTE, pref.getString(KEY_ROUTE, null));
+        user.put(KEY_PHONE, pref.getString(KEY_PHONE, null));
         return user;
     }
 

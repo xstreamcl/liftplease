@@ -17,6 +17,8 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageButton;
+import android.widget.Toast;
+
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -67,10 +69,12 @@ public class ViewLiftRequestActivity extends ActionBarActivity{
     private Marker subDestMarker;
     private Marker proSourceMarker;
     private Marker proDestMarker;
+    private String name;
     SessionManager session;
     String session_id;
     String provider_route;
     String user_route;
+    String phone;
 
 
     public static final String TAG = MapsActivity.class.getSimpleName();
@@ -88,6 +92,7 @@ public class ViewLiftRequestActivity extends ActionBarActivity{
 
         getDataFromIntent();
         getDataFromSession();
+        setTitle(name);
 
     }
 
@@ -133,15 +138,11 @@ public class ViewLiftRequestActivity extends ActionBarActivity{
 
     public void getDataFromIntent(){
         Intent intent = getIntent();
-        String provider_name = intent.getStringExtra("name");
-        String provider_image_uri = intent.getStringExtra("image_uri");
+        name = intent.getStringExtra("name");
         provider_route = intent.getStringExtra("route");
-        String provider_org_name = intent.getStringExtra("org_name");
-        String provider_org_title = intent.getStringExtra("org_title");
-        String stop = intent.getStringExtra("stop");
-        String start = intent.getStringExtra("start");
         subscriberId = intent.getStringExtra("id");
-        setTitle(provider_name);
+        phone = intent.getStringExtra("phone");
+        setTitle(name);
     }
 
     public void showRoute(){
@@ -379,6 +380,9 @@ public class ViewLiftRequestActivity extends ActionBarActivity{
             try {
                 JSONObject jObject = new JSONObject(result);
                 JSONObject dataObject = jObject.getJSONObject("data");
+                finish();
+                Toast.makeText(getApplicationContext(), "We have shared your phone number with "+name+" .He should call you soon.",
+                        Toast.LENGTH_LONG).show();
             } catch (JSONException e) {
                 Log.e("JSONException", "Error: " + e.toString());
             }

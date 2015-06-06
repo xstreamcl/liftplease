@@ -30,7 +30,8 @@ public class SubscriberWaitingActivity extends ActionBarActivity {
     private Handler mHandler;
     private TextView timerBox;
     private String providerId;
-    private TextView success_container;
+    private String phone;
+    private LinearLayout success_container;
     private LinearLayout waiting_container;
     SessionManager session;
     HashMap<String, String> user;
@@ -44,10 +45,11 @@ public class SubscriberWaitingActivity extends ActionBarActivity {
         setContentView(R.layout.activity_subscriber_waiting);
         mHandler.post(mRunnable);
         timerBox = (TextView)findViewById(R.id.timer);
-        success_container = (TextView)findViewById(R.id.success_container);
+        success_container = (LinearLayout)findViewById(R.id.success_container);
         waiting_container = (LinearLayout)findViewById(R.id.waiting_container);
         Intent intent = getIntent();
         providerId = intent.getStringExtra("providerId");
+        phone = intent.getStringExtra("phone");
         session = new SessionManager(getApplicationContext());
         user = session.getUserDetails();
     }
@@ -111,7 +113,7 @@ public class SubscriberWaitingActivity extends ActionBarActivity {
                     waiting_container.setVisibility(View.GONE);
                     success_container.setVisibility(View.VISIBLE);
                 }else{
-                    Toast.makeText(getApplicationContext(), "No action has been taken on your request so far",
+                    Toast.makeText(getApplicationContext(), "No action has been taken on your request so far.",
                             Toast.LENGTH_LONG).show();
                 }
             } catch (JSONException e) {

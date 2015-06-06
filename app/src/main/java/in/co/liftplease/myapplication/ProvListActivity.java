@@ -84,6 +84,7 @@ public class ProvListActivity extends ActionBarActivity {
                     intent.putExtra("org_title", ((ListViewItem) o).org_title);
                     intent.putExtra("route", ((ListViewItem) o).route);
                     intent.putExtra("id", ((ListViewItem) o).id);
+                    intent.putExtra("phone", ((ListViewItem) o).phone);
                     startActivity(intent);
                 }
             }
@@ -106,7 +107,9 @@ public class ProvListActivity extends ActionBarActivity {
             try {
                 JSONObject object = listArray.getJSONObject(i);
                 int trip_elapsed_time = 120 - (int) Double.parseDouble(object.getString("trip_elapsed_time"));
-                mItems.add(new ListViewItem(object.getString("image"), object.getString("name"), object.getString("org_title"), object.getString("org_name"), trip_elapsed_time, object.getString("provider_route"), object.getString("stop"), object.getString("start"), object.getString("id")));
+                if(trip_elapsed_time > 0){
+                    mItems.add(new ListViewItem(object.getString("image"), object.getString("name"), object.getString("org_title"), object.getString("org_name"), trip_elapsed_time, object.getString("provider_route"), object.getString("stop"), object.getString("start"), object.getString("id"), object.getString("phone")));
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -161,7 +164,8 @@ public class ProvListActivity extends ActionBarActivity {
         public final String stop;
         public final String start;
         public final String id;
-        public ListViewItem(String image_uri, String name, String org_title, String org_name, int trip_elapsed_time, String route, String stop, String start, String id) {
+        public final String phone;
+        public ListViewItem(String image_uri, String name, String org_title, String org_name, int trip_elapsed_time, String route, String stop, String start, String id, String phone) {
             this.image_uri = image_uri;
             this.name = name;
             this.org_title = org_title;
@@ -171,6 +175,7 @@ public class ProvListActivity extends ActionBarActivity {
             this.stop = stop;
             this.start = start;
             this.id = id;
+            this.phone = phone;
         }
         public String getName() {
             return name;
@@ -310,6 +315,7 @@ public class ProvListActivity extends ActionBarActivity {
                 viewHolder.stop = (TextView) convertView.findViewById(R.id.stop);
                 viewHolder.start = (TextView) convertView.findViewById(R.id.start);
                 viewHolder.id = (TextView) convertView.findViewById(R.id.id);
+                viewHolder.phone = (TextView) convertView.findViewById(R.id.phone);
                 convertView.setTag(viewHolder);
             } else {
                 // recycle the already inflated view
@@ -338,6 +344,7 @@ public class ProvListActivity extends ActionBarActivity {
             TextView stop;
             TextView start;
             TextView id;
+            TextView phone;
         }
 
         public class ImageDownloaderTask extends AsyncTask<String, Void, Bitmap> {

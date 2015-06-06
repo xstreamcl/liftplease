@@ -65,6 +65,7 @@ public class LoginActivity extends Activity implements
     String org_name = null;
     String org_title = null;
     String device_id = null;
+    String phone_number= null;
 
     /* Request code used to invoke sign in user interactions. */
     private static final int RC_SIGN_IN = 0;
@@ -283,13 +284,29 @@ public class LoginActivity extends Activity implements
                 JSONObject jObject = new JSONObject(result);
                 JSONObject dataObject = jObject.getJSONObject("data");
                 String key = dataObject.getString("key");
-                session.createLoginSession(name,email,image_uri,key,"0");
-                proceed();
+                String phone = dataObject.getString("phone");
+                if(phone == "null" || phone == "" || phone == null){
+                    showPhoneNumberScreen(name,email,image_uri,key,"0");
+                }else{
+                    session.createLoginSession(name,email,image_uri,key,"0",phone);
+                    proceed();
+                }
             } catch (JSONException e) {
                 Log.e("JSONException", "Error: " + e.toString());
             }
         }
 
+    }
+
+    public void showPhoneNumberScreen(String name, String email, String image_uri, String key, String status){
+        Intent intent = new Intent(getApplicationContext(), UpdatePhone.class);
+        intent.putExtra("name", name);
+        intent.putExtra("email", email);
+        intent.putExtra("image_uri", image_uri);
+        intent.putExtra("key", key);
+        intent.putExtra("status", status);
+        startActivity(intent);
+        finish();
     }
 
     public void proceed(){

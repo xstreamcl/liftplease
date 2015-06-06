@@ -48,5 +48,6 @@
     <string name="title_activity_request_lift">RequestLiftActivity</string>
     <string name="title_activity_view_lift_request">ViewLiftRequestActivity</string>
     <string name="title_activity_subscriber_waiting">SubscriberWaitingActivity</string>
+    <string name="title_activity_update_phone">Add Phone Number</string>
 
 </resources>

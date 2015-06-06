@@ -12,6 +12,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <!--
  The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
          Google Maps Android API v2, but are recommended.
@@ -63,11 +64,13 @@
         </activity>
         <activity
             android:name=".SubTripCreationActivity"
-            android:label="@string/title_activity_sub_trip_creation" >
+            android:label="@string/title_activity_sub_trip_creation"
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".ProvTripCreationActivity"
-            android:label="@string/title_activity_prov_trip_creation" >
+            android:label="@string/title_activity_prov_trip_creation"
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".SubListActivity"
@@ -88,6 +91,10 @@
         <activity
             android:name=".SubscriberWaitingActivity"
             android:label="Waiting for response.." >
+        </activity>
+        <activity
+            android:name=".UpdatePhone"
+            android:label="@string/title_activity_update_phone" >
         </activity>
     </application>
 
