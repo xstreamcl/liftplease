@@ -390,7 +390,9 @@ public class RequestLiftActivity extends ActionBarActivity{
                 Intent intent = new Intent(getApplicationContext(), SubscriberWaitingActivity.class);
                 intent.putExtra("providerId", providerId);
                 intent.putExtra("phone", phone);
+                intent.putExtra("name", name);
                 startActivity(intent);
+                finish();
             } catch (JSONException e) {
                 Log.e("JSONException", "Error: " + e.toString());
             }

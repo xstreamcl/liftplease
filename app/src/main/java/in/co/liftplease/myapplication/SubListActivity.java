@@ -102,6 +102,8 @@ public class SubListActivity extends ActionBarActivity {
 
         session = new SessionManager(getApplicationContext());
         user = session.getUserDetails();
+
+        startRunnable();
     }
 
     public void onSuccess(){

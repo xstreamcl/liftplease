@@ -30,7 +30,6 @@ public class SubscriberWaitingActivity extends ActionBarActivity {
     private Handler mHandler;
     private TextView timerBox;
     private String providerId;
-    private String phone;
     private LinearLayout success_container;
     private LinearLayout waiting_container;
     SessionManager session;
@@ -47,9 +46,14 @@ public class SubscriberWaitingActivity extends ActionBarActivity {
         timerBox = (TextView)findViewById(R.id.timer);
         success_container = (LinearLayout)findViewById(R.id.success_container);
         waiting_container = (LinearLayout)findViewById(R.id.waiting_container);
+        TextView phoneNumber = (TextView)findViewById(R.id.phone);
+        TextView nameBox = (TextView)findViewById(R.id.name);
         Intent intent = getIntent();
         providerId = intent.getStringExtra("providerId");
-        phone = intent.getStringExtra("phone");
+        String phone = intent.getStringExtra("phone");
+        phoneNumber.setText(phone);
+        String name = intent.getStringExtra("name");
+        nameBox.setText(name);
         session = new SessionManager(getApplicationContext());
         user = session.getUserDetails();
     }
