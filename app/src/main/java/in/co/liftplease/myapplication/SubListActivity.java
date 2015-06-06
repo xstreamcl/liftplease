@@ -81,7 +81,6 @@ public class SubListActivity extends ActionBarActivity {
                 @Override
                 public void onItemClick(AdapterView<?> arg0, View view,int position, long id) {
                     Object o = listView.getItemAtPosition(position);
-                    String pen = o.toString();
                     Intent intent = new Intent(getApplicationContext(), ViewLiftRequestActivity.class);
                     intent.putExtra("name", ((ListViewItem) o).name);
                     intent.putExtra("image_uri", ((ListViewItem) o).image_uri);
@@ -163,6 +162,9 @@ public class SubListActivity extends ActionBarActivity {
                     timerBox.setText(Integer.toString(timer));
                 }else{
                     Toast.makeText(getApplicationContext(), "Your offer is now expired.", Toast.LENGTH_LONG).show();
+                    if(listToDisplay.length() == 0){
+                        finish();
+                    }
                 }
                 // update every second
                 mHandler.postDelayed(this, 1000);
