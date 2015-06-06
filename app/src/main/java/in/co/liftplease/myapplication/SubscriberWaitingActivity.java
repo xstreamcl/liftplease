@@ -51,7 +51,7 @@ public class SubscriberWaitingActivity extends ActionBarActivity {
         Intent intent = getIntent();
         providerId = intent.getStringExtra("providerId");
         String phone = intent.getStringExtra("phone");
-        phoneNumber.setText(phone);
+        phoneNumber.setText("9611284422");
         String name = intent.getStringExtra("name");
         nameBox.setText(name);
         session = new SessionManager(getApplicationContext());
@@ -113,7 +113,7 @@ public class SubscriberWaitingActivity extends ActionBarActivity {
                 JSONObject jObject = new JSONObject(result);
                 JSONObject dataObject = jObject.getJSONObject("data");
                 String status = dataObject.getString("status");
-                if(status == "1"){
+                if(status.equals("1")){
                     waiting_container.setVisibility(View.GONE);
                     success_container.setVisibility(View.VISIBLE);
                 }else{

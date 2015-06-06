@@ -12,18 +12,17 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:gravity="bottom"
+        android:layout_gravity="center_horizontal|bottom"
         android:layout_marginTop="70dp"
         android:background="@drawable/xxxhdpi"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
+        android:layout_gravity="center_horizontal|bottom"
         android:textColor="#333333"
         android:textSize="40sp"
-        android:gravity="bottom"
+        android:layout_marginTop="20dp"
         android:layout_weight="30"
         android:text="Lift Please" />
 
