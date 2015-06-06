@@ -120,16 +120,22 @@ class Provider(Resource):
         post_reply = {}
         #try:
         lp_uid = lp_user.query.filter_by(app_id=args.app_id).first().lp_uid #this call should never fail.
-        if db.session.query(lp_provider).filter_by(lp_uid=lp_uid).update({"trip_creation_time":trip_creation_time,"routeid":routeid,"encroute":args.encroute})!=0:
-            #db.session.add(lp_provider(lp_uid, trip_creation_time, routeid, args.encroute))
-            db.session.commit()
-            post_reply['status'] = 'OK'
-            post_reply['message'] = 'Provider added'
-            post_reply['data'] = 'null'
+        check = db.session.query(lp_provider).filter_by(lp_uid=lp_uid).first()
+        if check != None:
+            if db.session.query(lp_provider).filter_by(lp_uid=lp_uid).update({"trip_creation_time":trip_creation_time,"routeid":routeid,"encroute":args.encroute})!=0:
+                #db.session.add(lp_provider(lp_uid, trip_creation_time, routeid, args.encroute))
+                db.session.commit()
+                post_reply['status'] = 'OK'
+                post_reply['message'] = 'Provider added'
+                post_reply['data'] = 'null'
+            else:
+                post_reply['status'] = 'Failed'
+                post_reply['message'] = 'provider could not be updated'
+                post_reply['data'] = 'null'
         else:
-            post_reply['status'] = 'Failed'
-            post_reply['message'] = 'provider could not be updated'
-            post_reply['data'] = 'null'
+            lp_uid = lp_user.query.filter_by(app_id=args.app_id).first().lp_uid #this call should never fail.
+            db.session.add(lp_provider(lp_uid, trip_creation_time, routeid, args.encroute))
+
         #except:
         #    post_reply['status'] = 'Failed'
         #    post_reply['message'] = 'db exception'
