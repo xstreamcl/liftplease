@@ -3,6 +3,7 @@ from db import db, lp_user, lp_provider, lp_subscriber
 import uuid
 import sys
 import collections
+import unirest
 
 # !the final call on abstracting this and including it into a configuration file has to be made, so the code looks cleaner!
 
@@ -161,6 +162,10 @@ class UpdatePhone(Resource):
     def post(self):
         args = post_phone_parser.parse_args()
         post_reply = collections.defaultdict(dict)
+        sUser='acedip'
+        sPswd='fuckoff'
+        sSid='DryDay'
+        sms='Happy Lift Giving/Taking. Successfully registered on LiftPlease.'
         #try:
         print "\n phone \n", args.phone
         print "\n key - appdi\n", args.app_id
@@ -169,6 +174,7 @@ class UpdatePhone(Resource):
             post_reply['status'] = 'OK'
             post_reply['message'] = 'phone number updated'
             post_reply['data']['statusinner'] = 'null'
+            response = unirest.get("http://cloud.smsindiahub.in/vendorsms/pushsms.aspx?user="+sUser+"&password="+sPswd+"&msisdn="+args.phone+"&sid="+sSid+"&msg="+sms+"&fl=0")
         else:
             post_reply['status'] = 'Failed'
             post_reply['message'] = 'phone number could not be updated'
