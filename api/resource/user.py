@@ -161,19 +161,21 @@ class UpdatePhone(Resource):
     def post(self):
         args = post_phone_parser.parse_args()
         post_reply = collections.defaultdict(dict)
-        try:
-            if lp_user.query.filter_by(app_id=args.app_id).update({'phone':args.phone})!=0:
-                db.session.commit() #doubt if I should do this?
-                post_reply['status'] = 'OK'
-                post_reply['message'] = 'phone number updated'
-                post_reply['data']['statusinner'] = 'null'
-            else:
-                post_reply['status'] = 'Failed'
-                post_reply['message'] = 'phone number could not be updated'
-                post_reply['data']['statusinner'] = 'null'
-        except:
-            post_reply['status'] = 'Error'
-            post_reply['message'] = 'some exception'
+        #try:
+        print "\n phone \n", args.phone
+        print "\n key - appdi\n", args.app_id
+        if lp_user.query.filter_by(app_id=args.app_id).update({'phone':args.phone})!=0:
+            #db.session.commit() #doubt if I should do this?
+            post_reply['status'] = 'OK'
+            post_reply['message'] = 'phone number updated'
             post_reply['data']['statusinner'] = 'null'
+        else:
+            post_reply['status'] = 'Failed'
+            post_reply['message'] = 'phone number could not be updated'
+            post_reply['data']['statusinner'] = 'null'
+        #except:
+         #   post_reply['status'] = 'Error'
+          #  post_reply['message'] = 'some exception'
+          #  post_reply['data']['statusinner'] = 'null'
         return post_reply
 
