@@ -55,6 +55,8 @@ public class UpdatePhone extends ActionBarActivity implements GoogleApiClient.Co
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_update_phone);
+        session = new SessionManager(getApplicationContext());
+        session.checkLogin();
 
         TelephonyManager tMgr = (TelephonyManager)getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
         phone = tMgr.getLine1Number();
@@ -69,7 +71,6 @@ public class UpdatePhone extends ActionBarActivity implements GoogleApiClient.Co
                 .addScope(Plus.SCOPE_PLUS_PROFILE)
                 .build();
 
-        session = new SessionManager(getApplicationContext());
         Intent intent = getIntent();
         name = intent.getStringExtra("name");
         email = intent.getStringExtra("email");
