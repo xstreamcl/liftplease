@@ -11,6 +11,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.plus.Plus;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -32,7 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 
 
-public class UpdatePhone extends ActionBarActivity {
+public class UpdatePhone extends ActionBarActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     String name;
     String email;
@@ -43,6 +48,8 @@ public class UpdatePhone extends ActionBarActivity {
     EditText phoneNumber;
     String phone;
     String session_id;
+    private GoogleApiClient mGoogleApiClient;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +61,13 @@ public class UpdatePhone extends ActionBarActivity {
 
         phoneNumber = (EditText)findViewById(R.id.et_phone_number);
         phoneNumber.setText(phone);
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(Plus.API, Plus.PlusOptions.builder().build())
+                .addScope(Plus.SCOPE_PLUS_PROFILE)
+                .build();
 
         session = new SessionManager(getApplicationContext());
         Intent intent = getIntent();
@@ -80,18 +94,18 @@ public class UpdatePhone extends ActionBarActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+    public void onConnected(Bundle bundle) {
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
+    }
 
-        return super.onOptionsItemSelected(item);
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
     }
 
     private class MyAsyncTask extends AsyncTask<String, Integer, String> {
@@ -163,6 +177,37 @@ public class UpdatePhone extends ActionBarActivity {
             }
         }
 
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_logout:
+                logout();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    public void logout() {
+        if (mGoogleApiClient.isConnected()) {
+            Plus.AccountApi.clearDefaultAccount(mGoogleApiClient);
+            mGoogleApiClient.disconnect();
+            Toast.makeText(this, "Logged out successfully.", Toast.LENGTH_LONG).show();
+        }else{
+            Toast.makeText(this, "Not Connected", Toast.LENGTH_LONG).show();
+        }
+        if(session.isLoggedIn()){
+            session.logoutUser();
+            finish();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mGoogleApiClient.connect();
     }
 
     public void proceed(){
